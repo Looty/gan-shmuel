@@ -34,13 +34,16 @@ def git_api_comm():
         pureFolder = realFolder.replace("['","")
         
         print(pureFolder)
-        
-        os.system("echo Hello!!!")
-        os.system("git checkout origin/"+branch)
+
+        os.system("git checkout origin/" + branch)
+        os.system("git checkout " + branch)
         os.system("git pull")
-        os.system("pushd "+pureFolder)
+        os.system("cd " + pureFolder)
+        #os.system("pushd "+pureFolder)
         os.system("docker-compose up --detach")
-        os.system("popd")
+        #os.system("popd")
+        os.system("cd ..")
+
         # subprocess.run(["git checkout", "origin/"+branch])
         # subprocess.run(["git pull"])
         # subprocess.run(["pushd", pureFolder])
