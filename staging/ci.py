@@ -34,7 +34,7 @@ def git_api_comm():
         pureFolder = realFolder.replace("['","")
         
         print(pureFolder)
-
+        os.system("cd gan-shmuel/")
         os.system("git checkout origin/" + branch)
         os.system("git checkout " + branch)
         os.system("git pull")
