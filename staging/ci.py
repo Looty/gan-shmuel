@@ -9,6 +9,13 @@ def main():
 def health():
     return "ok"
 
+@app.route('/gitcomm' , methods=['POST'])
+def git_api_comm():
+    if request.headers['Content-Type'] == 'application/json':
+        my_commit = json.dumps(request.json)
+        print(my_commit)
+        return my_commit
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
