@@ -1,5 +1,5 @@
 # gan-shmuel
-# Devops1
+# Devops
 
 production:
     - add files for production here
