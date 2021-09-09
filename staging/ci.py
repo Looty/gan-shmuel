@@ -1,5 +1,7 @@
+import os
 from flask import Flask, request ,json
-import subprocess
+#import subprocess
+
 
 app = Flask(__name__)
 
@@ -33,13 +35,15 @@ def git_api_comm():
         
         print(pureFolder)
         
+        os.system("echo Hello!!!")
 
-        subprocess.run(["echo", "hello"])
-        subprocess.run(["git checkout", "origin/"+branch])
-        subprocess.run(["git pull"])
-        subprocess.run(["pushd", pureFolder])
-        subprocess.run(["docker-compose up --detach"])
-        subprocess.run(["popd"])
+
+        # subprocess.run(["echo", "hello"])
+        # subprocess.run(["git checkout", "origin/"+branch])
+        # subprocess.run(["git pull"])
+        # subprocess.run(["pushd", pureFolder])
+        # subprocess.run(["docker-compose up --detach"])
+        # subprocess.run(["popd"])
         return my_commit
 
 
