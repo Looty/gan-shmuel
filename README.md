@@ -1,5 +1,5 @@
 # gan-shmuel
-# Weight
+# Devops
 
 production:
     - add files for production here
