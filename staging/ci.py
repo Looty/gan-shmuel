@@ -12,7 +12,7 @@ def health():
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
-        my_commit = json.dumps(request.json)
+        my_commit = request.json
         print(my_commit)
         return my_commit
 
