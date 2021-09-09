@@ -6,7 +6,7 @@ RUN rc-update add docker boot
 RUN apk update && \
     apk upgrade && \
     apk add git
-RUN git clone https://github.com/Looty/gan-shmuel.git
-RUN cd gan-shmuel
-EXPOSE 8080
-ENTRYPOINT ["python3" , "./ci.py"]
+#RUN git clone https://github.com/Looty/gan-shmuel.git
+#WORKDIR /gan-shmuel
+#EXPOSE 8080
+#ENTRYPOINT ["python3" , "./ci.py"]
