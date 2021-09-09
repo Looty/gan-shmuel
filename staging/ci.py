@@ -36,9 +36,11 @@ def git_api_comm():
         print(pureFolder)
         
         os.system("echo Hello!!!")
-
-
-        # subprocess.run(["echo", "hello"])
+        os.system("git checkout origin/"+branch)
+        os.system("git pull")
+        os.system("pushd "+pureFolder)
+        os.system("docker-compose up --detach")
+        os.system("popd")
         # subprocess.run(["git checkout", "origin/"+branch])
         # subprocess.run(["git pull"])
         # subprocess.run(["pushd", pureFolder])
