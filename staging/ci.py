@@ -1,4 +1,5 @@
 from flask import Flask, request ,json, jsonify
+import json
 import subprocess
 app = Flask(__name__)
 
@@ -14,17 +15,18 @@ def health():
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
         my_commit = request.json
-
+        myJson = json.dumps(my_commit, indent=4)
+        
         #r = json.parse(my_commit)
-        r = jsonify(my_commit)
+        #r = jsonify(my_commit)
 
-        print(r)
+        print(myJson)
 
-        branch_ref = r.ref
+        branch_ref = myJson.ref
 
         print(branch_ref)
 
-        directory_ref = r.commits["modified"]
+        directory_ref = myJson.commits["modified"]
 
         print(directory_ref)
         
