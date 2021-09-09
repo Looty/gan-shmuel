@@ -34,13 +34,12 @@ def git_api_comm():
         print(pureFolder)
         
 
-        subprocess.run(["echo hello"])
-        subprocess.run(["git checkout origin", branch], stderr=subprocess.PIPE, text=True)
-        subprocess.run(["git pull"], stderr=subprocess.PIPE, text=True)
-        subprocess.run(["pushd", pureFolder], stderr=subprocess.PIPE, text=True)
-        subprocess.run(["docker-compose up --detach"], stderr=subprocess.PIPE, text=True)
-        subprocess.run(["popd"], stderr=subprocess.PIPE, text=True)
-
+        subprocess.run(["echo", "hello"])
+        subprocess.run(["git checkout", "origin/"+branch])
+        subprocess.run(["git pull"])
+        subprocess.run(["pushd", pureFolder])
+        subprocess.run(["docker-compose up --detach"])
+        subprocess.run(["popd"])
         return my_commit
 
 
