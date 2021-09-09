@@ -13,9 +13,9 @@ services:
     volumes:
       - data:/var/lib/mysql
       - ./billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
-    environment:
-      - "MYSQL_DATABASE=billdb"
-      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=weightDB"
+      - "MYSQL_USER=root"
+      - "MYSQL_ROOT_PASSWORD=alpine"
     expose:
       - "3306"
 
