@@ -42,7 +42,7 @@ def git_api_comm():
         #os.system("pushd "+pureFolder)
         os.system("docker-compose up --detach")
         #os.system("popd")
-        os.system("cd ..")
+        os.system("cd ../..")
 
         # subprocess.run(["git checkout", "origin/"+branch])
         # subprocess.run(["git pull"])
