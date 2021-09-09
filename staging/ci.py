@@ -35,6 +35,7 @@ def git_api_comm():
         
         print(pureFolder)
         os.system("echo $PWD")
+        os.system("ls")
         os.system("cd /gan-shmuel/")
         os.system("git checkout origin/" + branch)
         os.system("git checkout " + branch)
