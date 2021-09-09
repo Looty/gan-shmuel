@@ -15,11 +15,23 @@ def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
         my_commit = request.json
 
+        print(my_commit)
+
         branch_ref = my_commit.ref
+
+        print(branch_ref)
+
         directory_ref = my_commit.commits["modified"]
+
+        print(directory_ref)
         
         branch = branch_ref.split("/")[2]
+
+        print(branch)
+        
         directory = directory_ref.split("/")[0]
+
+        print(directory)
 
         subprocess.run(["echo hello"])
         subprocess.run(["git checkout origin", branch], stderr=subprocess.PIPE, text=True)
@@ -28,7 +40,6 @@ def git_api_comm():
         subprocess.run(["docker-compose up --detach"], stderr=subprocess.PIPE, text=True)
         subprocess.run(["popd"], stderr=subprocess.PIPE, text=True)
 
-        print(my_commit)
         return my_commit
 
 
