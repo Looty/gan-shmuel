@@ -1,6 +1,6 @@
-from flask import Flask, request ,json, jsonify
-import json
+from flask import Flask, request ,json
 import subprocess
+
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
@@ -14,34 +14,30 @@ def health():
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
+       
         my_commit = request.json
-        myJson = json.dumps(my_commit, indent=4)
-        
-        #r = json.parse(my_commit)
-        #r = jsonify(my_commit)
+        jsonDump = json.dumps(my_commit)
+        jsonLoad = json.loads(jsonDump)
 
-        print(myJson)
+        branch_ref = jsonLoad["ref"]
 
-        branch_ref = myJson.ref
+        directory_ref = jsonLoad["commits"][-1]
 
-        print(branch_ref)
-
-        directory_ref = myJson.commits["modified"]
-
-        print(directory_ref)
-        
         branch = branch_ref.split("/")[2]
-
         print(branch)
+        realDir = directory_ref["modified"]
 
-        directory = directory_ref.split("/")[0]
-
-        print(directory)
+        dirToString = str(realDir)
+        realFolder = dirToString.split("/")[0]
+        pureFolder = realFolder.replace("['","")
+        
+        print(pureFolder)
+        
 
         subprocess.run(["echo hello"])
         subprocess.run(["git checkout origin", branch], stderr=subprocess.PIPE, text=True)
         subprocess.run(["git pull"], stderr=subprocess.PIPE, text=True)
-        subprocess.run(["pushd", directory], stderr=subprocess.PIPE, text=True)
+        subprocess.run(["pushd", pureFolder], stderr=subprocess.PIPE, text=True)
         subprocess.run(["docker-compose up --detach"], stderr=subprocess.PIPE, text=True)
         subprocess.run(["popd"], stderr=subprocess.PIPE, text=True)
 
