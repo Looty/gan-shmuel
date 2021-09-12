@@ -19,6 +19,13 @@ def helth():
 @app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
 def itemId():
     
+
+    cursor = mysql.connection.cursor()
+    cursor.execute(''' INSERT INTO info_table VALUES(%s,%s)''',(name,age))
+    mysql.connection.commit()
+    cursor.close()
+
+
     resp = jsonify()
     resp.status_code = 404
     return resp   

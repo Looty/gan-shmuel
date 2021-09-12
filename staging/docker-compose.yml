@@ -3,15 +3,15 @@ services:
   app:
     build: ./app
     links:
-      - db
+      - weightDB
     ports:
       - "8084:5000"
 
-  db:
+  weightDB:
     image: mysql:8.0.21
     ports:
       - "30000:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - ./db:/docker-entrypoint-initdb.d/:ro
+      - ./weightDB:/docker-entrypoint-initdb.d/:ro
