@@ -1,13 +1,3 @@
-Flask
-mysql-connector
-Flask-SQLAlchemy
-SQLAlchemy
-Flask-Migrate
-Flask-Script
-Flask-Cors
+Flask==2.0.1
 requests
-pika
-flask-mysql
-PyMySQL
-cryptography
 mysql-connector-python

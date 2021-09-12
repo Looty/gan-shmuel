@@ -1,18 +1,16 @@
-
 version: '3.3'
 services:
   app:
     build: ./app
     depends_on:
-      - mysql
+      - db_wg
     ports: 
       - "8084:5000"
   
-  mysql:
+  db_wg:
     image: mysql:8
-    #container_name: mysql_db
     volumes: 
-      - "./mysql-db/whi_db.sql:/docker-entrypoint-initdb.d/whi_db.sql"
+      - "./mysql-db/whl_db.sql:/docker-entrypoint-initdb.d/whl_db.sql"
     environment: 
       - MYSQL_ROOT_PASSWORD=123456
     healthcheck:
