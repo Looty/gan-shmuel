@@ -63,10 +63,11 @@ def git_api_comm():
 
         if branch != "Devops":
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
-            os.system('docker exec -it $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
+            os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
 
             #print(str(subprocess.check_output(['python3', 'app/test.py'])))
             #test_result = subprocess.check_output(['python3', 'app/test.py'])
+            print(subprocess.getoutput('python3 app/test.py'))
             test_result = subprocess.getoutput('python3 app/test.py')
             print(test_result)
 
