@@ -91,12 +91,14 @@ def git_api_comm():
                 msg = Message('[Green-CI] Your build has crashed!', sender = 'autmailer101@gmail.com', recipients = [mail_list])
                 msg.body = "Hello from Green Devops AutoMailer! \n" + test_result
                 mail.send(msg)
+
+        os.chdir("../..")       
         #else:
             #os.system("docker-compose up# --detach --build")
 
         #os.system("pushd "+pureFolder)
         #os.system("popd")
-        os.chdir("../..")
+        
 
         return my_commit
 
