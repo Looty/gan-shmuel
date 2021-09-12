@@ -1,20 +1,21 @@
-version: "3"
+
+version: '3.3'
 services:
   app:
     build: ./app
-    links:
-      - db
-    ports:
+    depends_on:
+      - mysql
+    ports: 
       - "8084:5000"
-  db:
-    image: mysql:8.0.21
-    ports:
-      - "30000:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - ./db:/docker-entrypoint-initdb.d/:ro
-
-
-
-
+  
+  mysql:
+    image: mysql:8
+    #container_name: mysql_db
+    volumes: 
+      - "./mysql-db/whi_db.sql.sql:/docker-entrypoint-initdb.d/whi_db.sql"
+    environment: 
+      - MYSQL_ROOT_PASSWORD=123456
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10

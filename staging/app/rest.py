@@ -2,33 +2,26 @@ import pymysql
 from app import app
 from db import mysql
 from flask import jsonify
+import requests
+
 @app.route('/')
 @app.route('/index')
 def index():
     return "tryagen"
 @app.route('/health', methods=['GET'])
 def helth():
-    conn = mysql.connect()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("select 1;")
-    rows = cursor.fetchall()
-    resp = jsonify(rows)
-    resp.status_code = 200
-    return resp
-
-#@app.route('/item/<id>?from=t1&to=t2', methods=['GET'])
-#def itemId():
-    
-
-    #cursor = mysql.connection.cursor()
-    #cursor.execute(''' INSERT INTO info_table VALUES(%s,%s)''',(name,age))
-    #mysql.connection.commit()
-    #cursor.close()
-
-
-    #resp = jsonify()
-    #resp.status_code = 404
-    #return resp   
+    services = {"unknown"}
+    for service in services:
+        req = requests.get(f"http://localhost:5000/{service}")
+        status_code = req.status_code
+        if status_code < 200 or status_code > 299:
+            result = f"service {service} : {status_code} server error"
+            return result
+        else:
+            result = ""
+            for service in services:
+                result += f"Service {service} ... ok"
+            return result
 
     
 

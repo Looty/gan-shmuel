@@ -10,3 +10,4 @@ pika
 flask-mysql
 PyMySQL
 cryptography
+mysql-connector-python
