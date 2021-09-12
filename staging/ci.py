@@ -39,7 +39,7 @@ def git_api_comm():
         os.system("git pull")
         os.chdir(pureFolder)
         #os.system("pushd "+pureFolder)
-        os.system("yes N | docker-compose up --detach --build")
+        os.system("docker-compose up --detach --build")
         #os.system("popd")
         os.chdir("../..")
 
