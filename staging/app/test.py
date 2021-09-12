@@ -13,4 +13,3 @@ def tester():
         #print("A test failed! the server was not started!")
         return "ERROR"
 x = tester()
-sys.exit("OK")
