@@ -4,7 +4,7 @@ class mysql_db(object):
 	def __init__(self):
 		self.db_user = "root"
 		self.db_pass = "123456"
-		self.db_host = "db_wg"
+		self.db_host = "mysql"
 		self.db_name = "db"
 		self.connections = None
 

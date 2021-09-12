@@ -3,12 +3,13 @@ services:
   app:
     build: ./app
     depends_on:
-      - db_wg
+      - mysql
     ports: 
       - "8084:5000"
   
-  db_wg:
+  mysql:
     image: mysql:8
+    #container_name: mysql_db
     volumes: 
       - "./mysql-db/whl_db.sql:/docker-entrypoint-initdb.d/whl_db.sql"
     environment: 
