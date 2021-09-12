@@ -1,0 +1,12 @@
+Flask
+mysql-connector
+Flask-SQLAlchemy
+SQLAlchemy
+Flask-Migrate
+Flask-Script
+Flask-Cors
+requests
+pika
+flask-mysql
+PyMySQL
+cryptography
