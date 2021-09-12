@@ -8,6 +8,8 @@ from flask_apscheduler import APScheduler
 app = Flask(__name__)
 scheduler = APScheduler()
 
+currMin=0
+
 @app.route('/', methods=['GET'])
 def main():
     return "good"
@@ -42,12 +44,16 @@ def git_api_comm():
         
         print(pureFolder)
 
-        date = datetime.datetime.now()
-        dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
-        nm_dt = date.strftime("%d/%m/%Y_%H")
-        with open(f"./logFile_"+nm_dt+".txt", "a+") as com_log:
-            com_log.write("[{0}] {4} {1} {2} {3}".format(dt_string,branch,pureFolder,com_msg,author))
-            com_log.write("\n")
+        if currMin == 720:
+            date = datetime.datetime.now()
+            dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
+            nm_dt = date.strftime("%d%m%Y_%H")
+            with open(f"./logFile_"+nm_dt+".txt", "a+") as com_log:
+                com_log.write("[{0}] {4} {1} {2} {3}".format(dt_string,branch,pureFolder,com_msg,author))
+                com_log.write("\n")
+
+
+        
 
         os.chdir("/gan-shmuel/")
         os.system("ls -a")
@@ -66,7 +72,7 @@ def git_api_comm():
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'autmailer101@gmail.com'
-#app.config['MAIL_PASSWORD'] = 
+app.config['MAIL_PASSWORD'] = '12341234!'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
@@ -75,12 +81,12 @@ mail = Mail(app)
 @app.route('/mailer')
 def maiLogger():
     with app.app_context():
-        mail_list=["oronboy100@gmail.com","eilon696@gmail.com","ron981@gmail.com"]
+        mail_list=["oronboy100@gmail.com","eilon696@gmail.com","ron981@gmail.com" ,"erezmizra@gmail.com", "tovikolitz@gmail.com" , "hodaya060@gmail.com","kfir2251@gmail.com","c0527606305@gmail.com","Pinoubg@live.fr","efrat7024@gmail.com","htemstet@gmail.com"]
         for m in range(len(mail_list)):
             msg = Message('LogFile Just For you Green Team Leaders!()', sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
             msg.body = "Hello from Green Devops AutoMailer! \n Weve got new log for you (Attached)"
-            with app.open_resource("logFile_"+nm_dt+".txt"") as fp:
-                msg.attach("logFile_"+nm_dt+".txt"", "text/plain", fp.read()) 
+            with app.open_resource("logFile_"+nm_dt+".txt") as fp:
+                msg.attach("logFile_"+nm_dt+".txt", "text/plain", fp.read()) 
             mail.send(msg)
             return "Sent!"
 
