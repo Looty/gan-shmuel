@@ -10,7 +10,7 @@ def index():
 def helth():
     conn = mysql.connect()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT 1")
+    cursor.execute("select 1;")
     rows = cursor.fetchall()
     resp = jsonify(rows)
     resp.status_code = 200

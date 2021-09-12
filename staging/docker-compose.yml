@@ -9,8 +9,6 @@ services:
 
   weightDB:
     image: mysql:8.0.21
-    ports:
-      - "30000:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
