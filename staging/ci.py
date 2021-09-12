@@ -75,7 +75,7 @@ def git_api_comm():
 
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
 
-            if test_result == "OK":
+            if test_result == 0:
                 os.system(str_stop)
                 os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
             else:
@@ -93,7 +93,7 @@ def git_api_comm():
 
 
                 msg = Message('[Green-CI] Your build has crashed!', sender = 'autmailer101@gmail.com', recipients = [mail_list])
-                msg.body = "Hello from Green Devops AutoMailer! \n" + test_result
+                msg.body = "Hello from Green Devops AutoMailer! \n Error code: " + str(test_result)
                 mail.send(msg)
 
         os.chdir("../..")       
