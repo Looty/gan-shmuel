@@ -6,10 +6,11 @@ services:
       - dbw
     ports:
       - "8084:5000"
+   dbw:
 
-  dbw:
     image: mysql:8.0.21
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - ./dbw:/docker-entrypoint-initdb.d/:ro
+

@@ -8,4 +8,5 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
 app.config['MYSQL_DATABASE_DB'] = 'weight'
 app.config['MYSQL_DATABASE_HOST'] = 'dbw'
+
 mysql.init_app(app)
