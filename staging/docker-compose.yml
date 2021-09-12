@@ -3,13 +3,13 @@ services:
   app:
     build: ./app
     links:
-      - db
+      - dbw
     ports:
       - "8084:5000"
 
-  db:
+  dbw:
     image: mysql:8.0.21
     environment:
       MYSQL_ROOT_PASSWORD: root
     volumes:
-      - ./db:/docker-entrypoint-initdb.d/:ro
+      - ./dbw:/docker-entrypoint-initdb.d/:ro
