@@ -67,9 +67,9 @@ def git_api_comm():
 
             #print(str(subprocess.check_output(['python3', 'app/test.py'])))
             #test_result = subprocess.check_output(['python3', 'app/test.py'])
-            print(subprocess.getoutput('python3 app/test.py'))
+            #print(subprocess.getoutput('python3 app/test.py'))
             test_result = subprocess.getoutput('python3 app/test.py')
-            print(test_result)
+            os.system(test_result)
 
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
 
