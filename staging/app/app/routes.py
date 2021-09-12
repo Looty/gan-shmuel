@@ -1,8 +1,8 @@
-from flask import render_template
+from flask import render_template, request
 from app import app
-from flask import request
 import mysql.connector
-from mysql.connector import Error 
+import json
+
 
 @app.route('/')
 @app.route('/index')
@@ -12,20 +12,38 @@ def index():
 
 @app.route('/health', methods=['GET'])
 def health():
+    try:
+        mydb = mysql.connector.connect(
+            password='root', 
+            user='root', 
+            host='db', 
+            database='billdb', 
+            )
     
-    mydb = mysql.connector.connect(
-        password='root', 
-        user='root', 
-        host='db', 
-        port='3306', 
-        database='billdb' , 
-        auth_plugin='mysql_native_password')
-    
-    mycursor = mydb.cursor()
-    mycursor.execute("show tables")
-    res = str(mycursor.fetchall()) 
-    if res:
-        return '<h1>It works.</h1>'
+        mycursor = mydb.cursor()
+        mycursor.execute("show tables")
+        res = str(mycursor.fetchall())
+    except:
+        return render_template('health.html', msg='Something is broken.'), 500
     else:
-        return '<h1>Something is broken.</h1>'
+        return render_template('health.html', msg=res), 200
  
+
+
+@app.route('/provider', methods = ['POST', 'GET'])
+def postProvide():
+    if request.method == 'POST':
+      id = request.form['id']
+      name = request.form['name']
+      with open('provider.json', 'r+') as f:
+          feeds = json.load(f)
+          feeds.append({"id":id, "name":name})
+          f.seek(0)
+          print(feeds)
+          json.dump(feeds, f, indent="")
+      return render_template('provider.html', msg=("provider id: %s added successfuly." %id))
+    else:
+      id = request.args.get('id')
+      with open('provider.json', 'r') as f:
+          feeds = json.load(f)
+      return render_template('provider.html', msg=json.dumps(feeds))
