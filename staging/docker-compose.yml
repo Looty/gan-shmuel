@@ -5,9 +5,7 @@ services:
     ports:
       - "8082:5000"
     volumes:
-      - ./provider.json:/provider.json
-  redis:
-    image: "redis:alpine"
+      - ./in:/in
   db:
     image: mysql:8.0
     ports:
@@ -15,8 +13,6 @@ services:
     volumes:
       - data:/var/lib/mysql
       - ./db/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
-      - ./db/provider.json:/docker-entrypoint-initdb.d/provider.json
-      - data:/docker-entrypoint-initdb.d/
     environment:
       - "MYSQL_DATABASE=billdb"
       - "MYSQL_ROOT_PASSWORD=root"
