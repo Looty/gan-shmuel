@@ -1,22 +1,16 @@
-FROM ubuntu:20.04
 
+FROM python:3.8
 
-CMD tail -f /dev/null
+RUN apt-get update -y
 
-COPY . /app
-WORKDIR /app
-RUN apt-get update -y && apt-get install -y python3-pip python-dev
-#RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
-#RUN pip3 install flask
+RUN apt-get install -y python3-pip python3-dev curl
+
+COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
-COPY requirements.txt /app
+
 RUN pip install -r requirements.txt
 
+COPY . .
 
-#COPY . .
-COPY app.py /app
-
-ENTRYPOINT [ "python3" ]
-CMD [ "rest.py" ]
-##
+ENTRYPOINT [ "python", "rest.py" ]

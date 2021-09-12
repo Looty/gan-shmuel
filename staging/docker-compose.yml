@@ -12,7 +12,7 @@ services:
     image: mysql:8
     #container_name: mysql_db
     volumes: 
-      - "./mysql-db/whi_db.sql.sql:/docker-entrypoint-initdb.d/whi_db.sql"
+      - "./mysql-db/whi_db.sql:/docker-entrypoint-initdb.d/whi_db.sql"
     environment: 
       - MYSQL_ROOT_PASSWORD=123456
     healthcheck:
