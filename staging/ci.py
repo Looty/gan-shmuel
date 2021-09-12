@@ -4,6 +4,7 @@ import datetime
 from flask import Response
 from flask_mail import Mail, Message
 from flask_apscheduler import APScheduler
+import subprocess
 
 app = Flask(__name__)
 scheduler = APScheduler()
@@ -29,7 +30,8 @@ def git_api_comm():
         branch_ref = jsonLoad["ref"]
 
         directory_ref = jsonLoad["commits"][-1]
-
+        com_msg = directory_ref["message"]
+        author = directory_ref["author"]['email']
         branch = branch_ref.split("/")[2]
         print(branch)
         realDir = directory_ref["modified"]
@@ -52,17 +54,45 @@ def git_api_comm():
                 com_log.write("[{0}] {4} {1} {2} {3}".format(dt_string,branch,pureFolder,com_msg,author))
                 com_log.write("\n")
 
-
-        
-
         os.chdir("/gan-shmuel/")
         os.system("ls -a")
         os.system("git checkout origin/" + branch)
         os.system("git checkout " + branch)
         os.system("git pull")
         os.chdir(pureFolder)
+
+        if branch != "Devops":
+            os.system("docker-compose --env-file ./config/.env.test up --detach --build")
+            os.system('docker exec -it $(docker container ps --filter label=container=app --filter label=team=' + branch + ' --filter --format "{{.ID}}") sh')
+            test_result = subprocess.check_output("[python3 test.py]", shell=True)
+            os.system('exit')
+
+            str_stop = "docker stop $(docker container ps --filter label=team=" + branch + " --format '{{.ID}}')"
+
+            if test_result == "OK":
+                os.system(str_stop)
+                os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
+            else:
+                os.system(str_stop)
+                mail_list = ""
+
+                if (branch == "Devops"):
+                    mail_list = "eilon696@gmail.com"
+                elif (branch == "Billing"):
+                    mail_list = "oronboy100@gmail.com"
+                elif (branch == "Weight"):
+                    mail_list = "ron981@gmail.com"
+                else:
+                    mail_list = "eilon696@gmail.com"
+
+
+                msg = Message('[Green-CI] Your build has crashed!', sender = 'autmailer101@gmail.com', recipients = [mail_list])
+                msg.body = "Hello from Green Devops AutoMailer! \n" + test_result
+                mail.send(msg)
+        else:
+            os.system("docker-compose up --detach --build")
+
         #os.system("pushd "+pureFolder)
-        os.system("docker-compose up --detach --build")
         #os.system("popd")
         os.chdir("../..")
 
