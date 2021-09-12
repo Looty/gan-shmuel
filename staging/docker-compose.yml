@@ -3,7 +3,7 @@ services:
   web:
     build: ./app
     ports:
-      - "5000:5000"
+      - "8082:5000"
     volumes:
       - ./provider.json:/provider.json
   redis:
