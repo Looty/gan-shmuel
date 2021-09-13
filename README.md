@@ -1,8 +1,4 @@
 # gan-shmuel
 # Billing
 
-production:
-    - add files for production here
-
-staging:
-    - add files for staging here
+This folder contains all of Billing application
