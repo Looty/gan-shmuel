@@ -10,9 +10,9 @@ services:
       team: billing
       container: app
     depends_on:
-      - db
+      - bdb
 
-  db:
+  bdb:
     image: mysql:8.0
     ports:
       - "3306"

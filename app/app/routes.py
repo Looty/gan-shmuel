@@ -13,7 +13,7 @@ def init_db():
     return mysql.connector.connect(
         password='root', 
         user='root', 
-        host='db', 
+        host='bdb', 
         database='billdb')
 
 
