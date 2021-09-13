@@ -3,11 +3,15 @@ services:
   web:
     build: ./app
     ports:
-      - "8082:5000"
+      - "${PORT}:5000"
     volumes:
       - ./in:/in
-    depends_on: 
+    labels:
+      team: billing
+      container: app
+    depends_on:
       - db
+
   db:
     image: mysql:8.0
     ports:
@@ -19,7 +23,10 @@ services:
       - "MYSQL_DATABASE=billdb"
       - "MYSQL_ROOT_PASSWORD=root"
     expose:
-      - "3306"
+      - "3306"   
+    labels:
+      team: billing
+      container: db
 
 volumes:
   data:

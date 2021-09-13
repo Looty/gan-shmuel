@@ -220,4 +220,3 @@ def getBill(license_id):
         return "db error", 500
     else:
         return str(res), 200
-
