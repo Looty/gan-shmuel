@@ -4,7 +4,6 @@ import datetime
 from flask import Response
 from flask_mail import Mail, Message
 from flask_apscheduler import APScheduler
-import subprocess
 
 app = Flask(__name__)
 scheduler = APScheduler()
@@ -13,11 +12,11 @@ currMin=0
 
 @app.route('/', methods=['GET'])
 def main():
-    return "good"
+    return "wellcome to CI"
 
 @app.route('/health',methods=["GET"])
 def health():
-    return "ok"
+    return "CI up"
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
@@ -77,7 +76,10 @@ def git_api_comm():
 
             if test_result == 0:
                 os.system(str_stop)
-                os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
+                if pureFolder == "staging":
+                    os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
+                else:
+                    os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
             else:
                 os.system(str_stop)
                 mail_list = ""
