@@ -102,12 +102,15 @@ def git_api_comm():
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
-app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
+# app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
+# app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
+app.config['MAIL_USERNAME'] ='autmailer101@gmail.com'
+app.config['MAIL_PASSWORD'] ='12341234!'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
 mail = Mail(app)
+
 
 @app.route('/mailer')
 def maiLogger():
@@ -116,6 +119,7 @@ def maiLogger():
         title=sendmail(mail_list,'LogFile Just For you Green Team!',"Hello from Green Devops AutoMailer! \n Weve got new log for you (Attached)","logfile.log")
         with open("logfile.log","w") as com_log:
             com_log.write("")
+    print("HOLA IM HERE")
     return title
 
 def sendmail(mail_list,title,body,attachment=1):
@@ -135,6 +139,6 @@ def sendmail(mail_list,title,body,attachment=1):
 
 if __name__ == '__main__':
 
-    scheduler.add_job(id ='Scheduled task', func = maiLogger , trigger = 'interval', minutes = 720)
+    scheduler.add_job(id ='Scheduled task', func = maiLogger , trigger = 'interval', minutes = 1)
     scheduler.start()
     app.run(host='0.0.0.0')
