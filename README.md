@@ -1,8 +1,4 @@
 # gan-shmuel
 # Devops
 
-production:
-    - add files for production here
-
-staging:
-    - add files for staging here
+This folder contains all of Devops application
