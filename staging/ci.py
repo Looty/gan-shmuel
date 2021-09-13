@@ -8,7 +8,8 @@ from flask_apscheduler import APScheduler
 app = Flask(__name__)
 scheduler = APScheduler()
 
-currMin=0
+f=open("logfile.log","x")
+f.close()              
 
 @app.route('/', methods=['GET'])
 def main():
@@ -45,13 +46,10 @@ def git_api_comm():
         
         print(pureFolder)
 
-        if currMin == 720:
+        with open("logfile.log","a") as com_log:
             date = datetime.datetime.now()
             dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
-            nm_dt = date.strftime("%d%m%Y_%H")
-            with open(f"./logFile_"+nm_dt+".txt", "a+") as com_log:
-                com_log.write("[{0}] {4} {1} {2} {3}".format(dt_string,branch,pureFolder,com_msg,author))
-                com_log.write("\n")
+            com_log.write("[{0}] {4} {1} {2} {3} {5}".format(dt_string,branch,pureFolder,com_msg,author,"\n"))
 
         os.chdir("/gan-shmuel/")
         os.system("ls -a")
@@ -72,7 +70,18 @@ def git_api_comm():
             test_result = os.system('echo $?')
             print(test_result)
 
+            
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
+            mail_list = ""
+            if (branch == "Devops"):
+                    mail_list = ["eilon696@gmail.com",author]
+            elif (branch == "Billing"):
+                    mail_list = ["oronboy100@gmail.com",author]
+            elif (branch == "Weight"):
+                    mail_list = ["ron981@gmail.com",author]
+            else:
+                    mail_list = ["eilon696@gmail.com",author]
+            sendmail(mail_list,"test failed","your test result: " + test_result + "check your code again")
 
             if test_result == 0:
                 os.system(str_stop)
@@ -80,39 +89,20 @@ def git_api_comm():
                     os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 else:
                     os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
+                sendmail(mail_list,"test success","your test result: " + test_result + "the server will be update soon")
             else:
                 os.system(str_stop)
-                mail_list = ""
+                sendmail(mail_list,"test failed","your test result: " + test_result + "check your code again")
 
-                if (branch == "Devops"):
-                    mail_list = "eilon696@gmail.com"
-                elif (branch == "Billing"):
-                    mail_list = "oronboy100@gmail.com"
-                elif (branch == "Weight"):
-                    mail_list = "ron981@gmail.com"
-                else:
-                    mail_list = "eilon696@gmail.com"
-
-
-                msg = Message('[Green-CI] Your build has crashed!', sender = 'autmailer101@gmail.com', recipients = [mail_list])
-                msg.body = "Hello from Green Devops AutoMailer! \n Error code: " + str(test_result)
-                mail.send(msg)
 
         os.chdir("../..")       
-        #else:
-            #os.system("docker-compose up# --detach --build")
-
-        #os.system("pushd "+pureFolder)
-        #os.system("popd")
-        
-
         return my_commit
 
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'autmailer101@gmail.com'
-app.config['MAIL_PASSWORD'] = '12341234!'
+app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
@@ -122,17 +112,24 @@ mail = Mail(app)
 def maiLogger():
     with app.app_context():
         mail_list=["oronboy100@gmail.com","eilon696@gmail.com","ron981@gmail.com" ,"erezmizra@gmail.com", "tovikolitz@gmail.com" , "hodaya060@gmail.com","kfir2251@gmail.com","c0527606305@gmail.com","Pinoubg@live.fr","efrat7024@gmail.com","htemstet@gmail.com"]
-        for m in range(len(mail_list)):
-            msg = Message('LogFile Just For you Green Team Leaders!()', sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
-            msg.body = "Hello from Green Devops AutoMailer! \n Weve got new log for you (Attached)"
-            with app.open_resource("logFile_"+nm_dt+".txt") as fp:
-                msg.attach("logFile_"+nm_dt+".txt", "text/plain", fp.read()) 
-            mail.send(msg)
-            return "Sent!"
+        title=sendmail(mail_list,'LogFile Just For you Green Team!',"Hello from Green Devops AutoMailer! \n Weve got new log for you (Attached)","logfile.log")
+        with open("logfile.log","w") as com_log:
+            com_log.write("")
+    return title
 
+def sendmail(mail_list,title,body,attachment=1):
+    for m in range(len(mail_list)):
+        msg = Message(title, sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
+        msg.body = body
+        if attachment != 1:
+            with app.open_resource(attachment) as fp:
+                msg.attach(attachment, "text/plain", fp.read()) 
+        mail.send(msg)
+    return title
 
 
 if __name__ == '__main__':
-    scheduler.add_job(id ='Scheduled task', func = maiLogger , trigger = 'interval', minutes = 720)
+
+    scheduler.add_job(id ='Scheduled task', func = maiLogger() , trigger = 'interval', minutes = 720)
     scheduler.start()
     app.run(host='0.0.0.0')
