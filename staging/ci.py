@@ -8,8 +8,9 @@ from flask_apscheduler import APScheduler
 app = Flask(__name__)
 scheduler = APScheduler()
 
-f=open("logfile.log","x")
-f.close()              
+
+with open("logfile.log","w") as com_log:
+    com_log.write("")
 
 @app.route('/', methods=['GET'])
 def main():
@@ -81,7 +82,7 @@ def git_api_comm():
                     mail_list = ["ron981@gmail.com",author]
             else:
                     mail_list = ["eilon696@gmail.com",author]
-            sendmail(mail_list,"test failed","your test result: " + test_result + "check your code again")
+            sendmail(mail_list,"test failed","your test result: " +str(test_result) + "check your code again")
 
             if test_result == 0:
                 os.system(str_stop)
@@ -89,10 +90,10 @@ def git_api_comm():
                     os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 else:
                     os.system("docker-compose --env-file ./config/.env.dep up --detach --build")
-                sendmail(mail_list,"test success","your test result: " + test_result + "the server will be update soon")
+                sendmail(mail_list,"test success","your test result: " + str(test_result) + "the server will be update soon")
             else:
                 os.system(str_stop)
-                sendmail(mail_list,"test failed","your test result: " + test_result + "check your code again")
+                sendmail(mail_list,"test failed","your test result: " + str(test_result) + "check your code again")
 
 
         os.chdir("../..")       
@@ -118,18 +119,22 @@ def maiLogger():
     return title
 
 def sendmail(mail_list,title,body,attachment=1):
-    for m in range(len(mail_list)):
-        msg = Message(title, sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
-        msg.body = body
-        if attachment != 1:
-            with app.open_resource(attachment) as fp:
-                msg.attach(attachment, "text/plain", fp.read()) 
-        mail.send(msg)
-    return title
+    try:
+        for m in range(len(mail_list)):
+            msg = Message(title, sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
+            msg.body = body
+            if attachment != 1:
+                with app.open_resource(attachment) as fp:
+                    msg.attach(attachment, "text/plain", fp.read()) 
+            mail.send(msg)
+        return title
+    except:
+        print("Something Wrong")
+        
 
 
 if __name__ == '__main__':
 
-    scheduler.add_job(id ='Scheduled task', func = maiLogger() , trigger = 'interval', minutes = 720)
+    scheduler.add_job(id ='Scheduled task', func = maiLogger , trigger = 'interval', minutes = 720)
     scheduler.start()
     app.run(host='0.0.0.0')
