@@ -1,8 +1,5 @@
 # gan-shmuel
-# Devops
+# Staging
 
-production:
-    - add files for production here
-
-staging:
-    - add files for staging here
+This is the staging area:
+    - containers here will use their staging ports
