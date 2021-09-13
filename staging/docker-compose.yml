@@ -9,6 +9,8 @@ services:
     labels:
       team: billing
       container: app
+    depends_on:
+      - db
 
   db:
     image: mysql:8.0
