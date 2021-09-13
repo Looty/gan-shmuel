@@ -43,7 +43,7 @@ def git_api_comm():
 
         os.system("cat print.txt")
 
-        # [12/09/2021 10:41:38] made by eilon696@gmail.com on branch main 28282828
+        # [12/09/2021 10:41:38] made by .com on branch main 28282828
         with open("logfile.log", "a") as com_log:
             date = datetime.datetime.now()
             dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
@@ -55,6 +55,9 @@ def git_api_comm():
         os.system("git pull")
 
         if branch != "Devops":
+            volume_name= "gan-shmuel_" + branch.lower() + "_data"
+            #volume_name= "gan-shmuel_data"
+            os.system("docker volume rm -f " + volume_name)
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system('python3 app/test.py')
