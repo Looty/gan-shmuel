@@ -62,7 +62,7 @@ def git_api_comm():
             #os.system("docker volume rm -f " + volume_name)
 
             #add env to the volume
-            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch+"/"+branch+".sql")
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')

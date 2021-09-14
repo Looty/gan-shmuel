@@ -6,8 +6,8 @@ services:
       - "8080:5000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /var/www/html/gan-shmuel/billing:./billing/db
-      - /var/www/html/gan-shmuel/weight:./weight/db
+      - /var/www/html/gan-shmuel/billing/billingdb.sql:./billing/db//billingdb.sql
+      - /var/www/html/gan-shmuel/weight/weight.sql:./weight/db/weight.sql
     environment:
       - MAIL_PASSWORD='12341234!'
       - MAIL_USERNAME='autmailer101@gmail.com'
