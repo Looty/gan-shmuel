@@ -54,8 +54,12 @@ def postProvider():
         conn = init_db()
         mycursor = conn.cursor()
         # execute: insert 'name' into 'Provider' table (id created automatically)
-        sql = """SELECT * FROM Provider WHERE name=%s"""
         val = ([request.args.get("name")])
+        valtest = (request.args.get("name"))
+        if not isinstance(valtest, str) or len(val)>255:
+            return "bad type or length inserted", 500
+        
+        sql = """SELECT * FROM Provider WHERE name=%s"""
         mycursor.execute(sql, val)
         if mycursor.fetchone():
             return "name already exist", 400
