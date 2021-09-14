@@ -8,7 +8,7 @@ from flask_apscheduler import APScheduler
 app = Flask(__name__)
 scheduler = APScheduler()
 
-intervalHours = 120
+intervalHours = 720
 os.chdir("/gan-shmuel/")
 with open("logfile.log","w") as com_log:
     com_log.write("")
@@ -24,6 +24,8 @@ def health():
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
+
+        # TODO: docker-compose up TO PROD!
        
         my_commit = request.json
         jsonDump = json.dumps(my_commit)
@@ -62,7 +64,7 @@ def git_api_comm():
             #os.system("docker volume rm -f " + volume_name)
 
             #add env to the volume
-            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch+"/"+branch+".sql")
+            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
