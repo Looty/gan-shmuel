@@ -176,6 +176,8 @@ def getRates():
         conn = init_db()
         mycursor = conn.cursor()
         mycursor.execute("SELECT product_id,rate,scope FROM Rates")
+        if not mycursor.fetchone():
+            return "Rates table is empty!", 400
     except Exception as inst:
         return "db error", 500
     else:
