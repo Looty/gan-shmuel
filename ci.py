@@ -107,7 +107,7 @@ def mailLogger():
                     "kfir2251@gmail.com", "c0527606305@gmail.com", "Pinoubg@live.fr",
                     "efrat7024@gmail.com", "htemstet@gmail.com"]
 
-        title = sendmail(mail_list, 'Commiter report!', "Hello from Green Devops AutoMailer! \nAttaching the commit log of the last " + intervalHours + " hours", "logfile.log")
+        title = sendmail(mail_list, 'Commiter report!', "Hello from Green Devops AutoMailer! \nAttaching the commit log of the last " + str(intervalHours) + " hours", "logfile.log")
         with open("logfile.log", "w") as com_log:
             com_log.write("")
     return title
