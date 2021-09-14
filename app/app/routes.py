@@ -1,11 +1,12 @@
 from flask import render_template, request, jsonify
-import requests
+from pip._vendor import requests
 from app import app
 import mysql.connector
 import sys
 import json
 import os
 import datetime
+import random
 
 
 # initialize connection to database 'billdb' in mysql server
@@ -53,6 +54,11 @@ def postProvider():
         conn = init_db()
         mycursor = conn.cursor()
         # execute: insert 'name' into 'Provider' table (id created automatically)
+        sql = """SELECT * FROM Provider WHERE name=%s"""
+        val = ([request.args.get("name")])
+        mycursor.execute(sql, val)
+        if mycursor.fetchone():
+            return "name already exist", 400
         sql = """INSERT INTO Provider (name) VALUES (%s)"""
         val = ([request.args.get("name")])
         mycursor.execute(sql, val)
@@ -160,39 +166,32 @@ def getRates():
 
 @app.route('/session/<id>', methods=['GET'])
 def getSession(id):
+    truc_list = ["101", "102", "105", "101", "105"]
     retjson =  { "id": id, 
-                "truck": "22222",
+                "truck": random.choice(truc_list),
                 "bruto": 47,
-                "truckTara": 40,
-                "neto": 7
+                "Mandarin": 20,
+                "neto": random.randint(10, 50)
                 }
-    return json.dumps(retjson, indent=""), 200
+    return jsonify(retjson), 200
 
 
-@app.route('/truck/<license_id>', methods=['GET'])
-def getTruck(license_id):
-    response = requests.get("http://localhost:5000/item/" + license_id)
-    ret = response.json()
-    return jsonify(ret), 200
-
-
-@app.route('/item/<id>', methods=['GET'])
-def getItem(id):
-    retjson = { "id": id,
-                "hody5": 7,
-                "sessions": [1,2,3,4,5]
+@app.route('/item/<license_id>', methods=['GET'])
+def getItem(license_id):
+    sess_list =[]
+    for i in range(3):
+        sess = getSession(1)[0]
+        dict_data = json.loads(sess.data.decode('utf-8'))
+        sess_list.append(dict_data)
+    retjson = { "id": license_id,
+                "hody5": 1,
+                "sessions": sess_list
             }
     return jsonify(retjson), 200
 
 
-@app.route('/bill/<id>', methods=['GET'])
-def getBill(license_id):
-    # get the time parameters
-    t1 = request.args.get("from") if "from" in request.args else datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0).strftime('%Y%m%d%H%M%S')
-    t2 = request.args.get("to") if "to" in request.args else datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    print(t1,file=sys.stderr)
-    print(t2,file=sys.stderr)
-
+@app.route('/truck/<license_id>', methods=['GET'])
+def getTruck(license_id):
     try:
         conn = init_db()
         mycursor = conn.cursor()
@@ -200,18 +199,60 @@ def getBill(license_id):
         mycursor.execute("""SELECT * FROM Trucks WHERE id=%s""" % (license_id))
         if not mycursor.fetchone():
             return "not exist.", 404
-        # get the provider_id from the 'Trucks' table, and provider_name from the 'Provider' table
-        mycursor.execute("""SELECT provider_id FROM Trucks WHERE id=%s""" % (license_id))
-        provider_id = mycursor.fetchone()
-        mycursor.execute("""SELECT name FROM Provider WHERE id=%s""" % (provider_id))
-        provider_name = mycursor.fetchone() # tuple (5,)
-        # get a single session from /session/<id>
-        session = getSession(license_id)
-        # get the weights from the session
-        weight = json.loads(session[0].replace("'", "\"").replace("\n", ""))["neto"]
-        # create a dictionary with the return values
-        ret_dict = {"id":license_id, "provider_name":weight, "sessions":session}
+        response = requests.get("http://localhost:5000/item/" + license_id)
+        ret = response.json()
+    except:
+        return "something is wrong.", 500
+    else:
+        return jsonify(ret), 200
 
+
+@app.route('/bill/<id>', methods=['GET'])
+def getBill(id):
+    # get the time parameters
+    t1 = request.args.get("from") if "from" in request.args else datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0).strftime('%Y%m%d%H%M%S')
+    t2 = request.args.get("to") if "to" in request.args else datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+    try:
+        conn = init_db()
+        mycursor = conn.cursor()
+        # get the provider_name from the 'Provider' table
+        mycursor.execute("""SELECT name FROM Provider WHERE id=%s""" % (id))
+        provider_name = mycursor.fetchone() # tuple (5,)
+        mycursor.execute("""SELECT id FROM Trucks WHERE provider_id=%s""" % (id))
+        licenses_set = list(sum(mycursor.fetchall(), ())) # from tuple: [("101",),  ("105",), ....] to list []
+        print(licenses_set,file=sys.stderr)
+        sessions_list = []
+        for license in licenses_set:
+            items = getTruck(license)[0]
+            dict_data = json.loads(items.data.decode('utf-8'))
+            sessions_list.extend(dict_data["sessions"])
+        sessions_count = len(sessions_list)
+        truck_list = []
+        for sess in sessions_list:
+            truck_list.append(sess["truck"])
+        truck_count = len(set(truck_list))
+        print("****************",file=sys.stderr)
+        print(sessions_list,file=sys.stderr)
+        print(truck_list,file=sys.stderr)
+        
+        # create a dictionary to be return
+        ret_dict = {
+            'id': id,
+            'name': provider_name,
+            'from': t1,
+            'to': t2,
+            'truckCount': truck_count,
+            'sessionCount': sessions_count,
+            'products': [{
+                'product': 'orange',
+                'count': '5',
+                'amount': 100,
+                'rate': 20,
+                'pay': 2000
+                }],
+            'total': 50
+        }
+        print(ret_dict,file=sys.stderr)
         mycursor.execute("SELECT * FROM Trucks")
         res = mycursor.fetchall()
     except Exception as inst:
@@ -220,3 +261,34 @@ def getBill(license_id):
         return "db error", 500
     else:
         return str(res), 200
+
+# trucks table: id, provider_id
+# set_of_trucks_for_id = (...)
+# for loop: getTruck(license_id) for each one in set_of_trucks_for_id from t1 to t2
+# insert each session from getTruck(license_id)[sessions] into sessions_list
+# sessions_list = [...]
+# truck_id_list =[...]
+# truckCount = len(set(truck_id_list))
+
+# {
+#   "id": <str>,
+#   "name": <str>,
+#   "from": <str>,
+#   "to": <str>,
+#   "truckCount": <int>,
+#   "sessionCount": <int>,
+#   "products": [
+#     { "product":<str>,   product_id from Rates table
+#       "count": <str>, // number of sessions
+#       "amount": <int>, // total kg
+#       "rate": <int>, // agorot
+#       "pay": <int> // agorot
+#     },...
+#   ],
+#   "total": <int> // agorot
+# }
+
+        # get a single session from /session/<id>
+        # session = getSession(id)
+        # get the weights from the session
+        # weight = json.loads(session[0].replace("'", "\"").replace("\n", ""))["neto"]
