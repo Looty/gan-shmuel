@@ -137,30 +137,18 @@ def GET_session(id):
         directionAnswer = cursor.fetchall()    
         directionAnswer = directionAnswer[0]["direction"]
         if directionAnswer == "out":
-            query=f"SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE sessions.id={id}"
+            query=f"SELECT sessions.id, sessions.trucks_id AS truck, sessions.bruto,bruto-neto AS TruckTara, sessions.neto  FROM sessions WHERE sessions.id={id}"
             cursor.execute(query)
             result_list = cursor.fetchall() 
         else:      
-        # SQL = f"SELECT t1.id, t1.trucks_id, t1.bruto, \
-        # CASE WHEN t1.direction = 'out' then (select t1.bruto-t1.neto AS 'truckTara' FROM sessions t1, \
-        #     trucks t2 WHERE t1.id = {id} and t1.trucks_id = t2.truckid ) END tara, t1.neto FROM \
-        #     sessions t1, trucks t2 WHERE t1.id = {id} and t1.trucks_id = t2.truckid"
-            query=f"SELECT id, trucks_id, bruto FROM sessions WHERE id={id}"
+            query=f"SELECT id, trucks_id AS truck, bruto FROM sessions WHERE id={id}"
             cursor.execute(query)
             result_list = cursor.fetchall()      #return sql result
-        resp = jsonify(result_list)
+        resp = jsonify(result_list[0])
         resp.status_code = 200
         return resp
-        # fields_list = cursor.description   # sql key name
-        # print("fields result -->",type(fields_list))
-        # #print("header--->",fields)
-        # cursor.close()
-        # conn.close()
     except error as e:
         return "Error while connection to Mysql"
-    # finally:
-    #     conn.close()
-    #     print ("==== mysql closed===")
 
 #77777777777777777777777777777777777777777777
     
