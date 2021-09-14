@@ -9,7 +9,7 @@ app = Flask(__name__)
 scheduler = APScheduler()
 
 intervalHours = 120
-
+os.chdir("/gan-shmuel/")
 with open("logfile.log","w") as com_log:
     com_log.write("")
 
@@ -49,8 +49,10 @@ def git_api_comm():
             dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
             com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
-        os.chdir("/gan-shmuel/")
-        os.system("git checkout origin/" + branch)
+       
+        #maybe can be renove because after one time we have all the branch
+        #os.system("git checkout origin/" + branch)
+        #
         os.system("git checkout " + branch)
         os.system("git pull")
 
@@ -58,11 +60,14 @@ def git_api_comm():
             #volume_name= "gan-shmuel_" + branch.lower() + "_data"
             #volume_name= "gan-shmuel_data"
             #os.system("docker volume rm -f " + volume_name)
+
+            #add env to the volume
+            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
+            #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system('python3 app/test.py')
             test_result = os.system('echo $?')
-
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
             mail_list = ""
 
@@ -77,14 +82,15 @@ def git_api_comm():
 
             if test_result == 0: # OK
                 os.system(str_stop)
+                os.system("git checkout staging")
+                os.system("git merge " + branch)
+                os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
                 os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
             else:
                 os.system(str_stop)
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
-
-
-        os.chdir("..")       
+        os.chdir("../..")       
         return my_commit
 
 
