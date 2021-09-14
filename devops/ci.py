@@ -70,7 +70,7 @@ def git_api_comm():
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
-            os.system('python3 app/test.py')
+            os.system('python3 ' + branch + '/app/test.py')
             test_result = os.system('echo $?')
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
             mail_list = ""
