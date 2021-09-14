@@ -18,6 +18,9 @@ def users():
 @app.route("/health", methods=['GET'])
 def health():
     return 'ok'
+    
+#222222222222222222222222222222222222222
+
 
 #333333333333333333333333333333333333333    
 @app.route("/unknown", methods=['GET'])
@@ -71,10 +74,10 @@ def itemId(id):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         int_id=int(id)
-        query=f"SELECT DISTINCT neto FROM sessions WHERE date=(SELECT MAX(date) FROM sessions WHERE trucks_id={int_id}) AND trucks_id={int_id};"
+        query=f"SELECT DISTINCT neto FROM sessions WHERE date=(SELECT MAX(date) FROM sessions WHERE trucks_id={int_id});"
         cursor.execute(query) 
         netoCursor = cursor.fetchall()
-        query_sessions=f"SELECT id FROM sessions WHERE trucks_id={int_id};"
+        query_sessions=f"SELECT id FROM sessions WHERE trucks_id={int_id} AND date BETWEEN {_from} AND {_to};"
         cursor.execute(query_sessions) 
         rows=[] 
         rows = cursor.fetchall()
@@ -100,7 +103,7 @@ def itemId(id):
         getContainerWeight=f"SELECT weight FROM containers WHERE id='{test_id}';"
         cursor.execute(getContainerWeight) 
         ContainerWeight = cursor.fetchall()
-        query=f"SELECT sessions_id FROM containers_has_sessions WHERE containers_id='{test_id}';"
+        query=f"SELECT sessions_id FROM containers_has_sessions WHERE containers_id='{test_id} AND date BETWEEN {_from} AND {_to}';"
         cursor.execute(query)
         rows=[] 
         rows = cursor.fetchall()

@@ -1,4 +1,4 @@
-version: "3"
+version: "2.1"
 services:
   app:
     build: ./app
@@ -9,6 +9,9 @@ services:
     labels:
       team: weight
       container: app 
+    depends_on:
+            db:
+                condition: service_healthy  
 
   db:
     image: mysql:8.0.21
@@ -18,4 +21,8 @@ services:
       - ./db:/docker-entrypoint-initdb.d/:ro
     labels:
       team: weight
-      container: db    
+      container: db 
+    healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10     
