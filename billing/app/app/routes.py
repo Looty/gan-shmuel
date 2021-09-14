@@ -42,7 +42,7 @@ def health():
         # res stores the output of the last executed command
         res = str(mycursor.fetchall())
     except:
-        return render_template('health.html', msg='Something is broken.'), 500
+        return "failed connecting to the database", 500
     else:
         return render_template('health.html', msg=res), 200
 
@@ -54,19 +54,23 @@ def postProvider():
         conn = init_db()
         mycursor = conn.cursor()
         # execute: insert 'name' into 'Provider' table (id created automatically)
-        val = ([request.args.get("name")])
-        valtest = (request.args.get("name"))
+        val = [request.args.get("name")]
+        valtest = val[0]
         if not isinstance(valtest, str) or len(val)>255:
-            return "bad type or length inserted", 500
+            return "bad type or length inserted", 400
         
         sql = """SELECT * FROM Provider WHERE name=%s"""
         mycursor.execute(sql, val)
         if mycursor.fetchone():
             return "name already exist", 400
+        
         sql = """INSERT INTO Provider (name) VALUES (%s)"""
         val = ([request.args.get("name")])
         mycursor.execute(sql, val)
         id = mycursor.lastrowid
+        if not id:
+            return "inserting new name failed",500
+        
         retjson = {"id":id}
     except:
         return "db error", 500
@@ -81,9 +85,9 @@ def putProvide(id):
     try:
         conn = init_db()
         mycursor = conn.cursor()
+        val = ([request.args.get("name"), id])
         # execute: update the 'name' of the wanted provider id ('id') in the 'Provider' table
         sql = """UPDATE Provider SET name = %s WHERE id = %s"""
-        val = ([request.args.get("name"), id])
         mycursor.execute(sql, val)
     except:
         return "db error", 500
@@ -98,9 +102,17 @@ def postTrucks():
         conn = init_db()
         mycursor = conn.cursor()
         id = request.args.get("id")
+        val = ([id, request.args.get("provider_id")])
+        
+        testid =[id]          
+        sql = """SELECT * FROM Trucks WHERE id=%s"""
+        mycursor.execute(sql, testid)
+        if mycursor.fetchone():
+            return "truck license plate already exist", 400
+        
         # execute: insert 'id' and 'provider_id' into 'Trucks' table
         sql = """INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)"""
-        val = ([id, request.args.get("provider_id")])
+       # val = ([id, request.args.get("provider_id")])
         mycursor.execute(sql, val)
         retjson = {"id":id}
     except:
@@ -136,16 +148,18 @@ def postRates():
         filename = request.args.get("file")
         filename = os.path.join("..","in", filename)
         rates = []
-        if os.path.isfile(filename):
-            with open (filename, "r" ) as exelfile:
-                lines = exelfile.readlines()
-                headers = lines[0][:-1].split(",")
-                for line in lines[1:]:
-                    row = dict()
-                    values = line[:-1].split(",")
-                    for i in range(len(headers)):
-                        row[headers[i]] = values[i] 
-                    rates.append(row)
+        if not os.path.isfile(filename):
+            return "file does not exist inside /in directory"
+        
+        with open (filename, "r" ) as exelfile:
+            lines = exelfile.readlines()
+            headers = lines[0][:-1].split(",")
+            for line in lines[1:]:
+                row = dict()
+                values = line[:-1].split(",")
+                for i in range(len(headers)):
+                    row[headers[i]] = values[i] 
+                rates.append(row)
             sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%s, %s, %s)"""
             mycursor.executemany(sql, map(lambda r: [r["Product"], r["Rate"], r["Scope"]], rates))
     except Exception as inst:
@@ -153,7 +167,7 @@ def postRates():
         print(inst.args,file=sys.stderr)     # arguments stored in .args
         return "db error", 500
     else:
-        return "rates updated",200
+        return "rates table updated successfully",200
 
 
 @app.route('/rates', methods=['GET'])

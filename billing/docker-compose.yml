@@ -18,7 +18,7 @@ services:
       - "3306"
     volumes:
       - data:/var/lib/mysql
-      - ./db/billingdb.sql:/docker-entrypoint-initdb.d/billingdb.sql
+      - ${VOLUME}:/docker-entrypoint-initdb.d/billingdb.sql
     environment:
       - "MYSQL_DATABASE=billdb"
       - "MYSQL_ROOT_PASSWORD=root"
