@@ -199,16 +199,17 @@ def POST_weight():
     truck_id=request.args.get('truckid')
     date = datetime.now().strftime('%Y%m%d%H%M%S')
     #pull out last direction
-    return truck_id
+    # return str(f"{direction}  {containers}   {weight}   {unit}  {force}   {product}   {truck_id}   {date}")
     cursor.execute(f"SELECT direction FROM sessions WHERE trucks_id = {truck_id} ORDER BY date desc limit 1")
     result=cursor.fetchall()
-    last_direction=result[0]['direction']
+    last_direction=result[0]["direction"]
     #neto
-    print()
     cursor.execute(f'SELECT weight from containers WHERE id = "{containers}"')
-    container_weight=cursor.fetchall()[0]['weight']
-    truck_weight = cursor.execute(f'SELECT weight from trucks WHERE id = "{truck_id}"')
-    truck_weight=cursor.fetchall()[0]['weight']
+    container_weight=cursor.fetchall()
+    container_weight=container_weight[0]["weight"]
+    truck_weight = cursor.execute(f'SELECT weight FROM trucks WHERE id = "{truck_id}"')
+    truck_weight=cursor.fetchall()
+    truck_weight=truck_weight[0]['weight']
     neto=float(weight)-container_weight-truck_weight
     #force=False - invalide direction
     if last_direction == direction and force == False :
@@ -252,8 +253,9 @@ def POST_weight():
 def NewSession(direction, force, date, weight, truck_id, product):
     conn = mysql.connect()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute(f'"SELECT id FROM products WHERE product_name={product}"')
-    product_id=cursor.fetchall()[0]['id']
+    cursor.execute(f"SELECT id FROM products WHERE product_name={product}")
+    product_id=cursor.fetchall()
+    product_id=product_id[0]['id']
     allData=(direction, force, date, weight, truck_id, product_id)
     query = (f'INSERT into sessions (direction, f, date, bruto, trucks_id, products_id) VALUES (%s, %s, %s, %s, %s, %s)')
     cursor.execute(query , allData)
