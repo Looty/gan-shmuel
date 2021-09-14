@@ -132,8 +132,11 @@ def GET_session(id):
         direction=f"SELECT direction FROM sessions WHERE id={id}"
         cursor.execute(direction)
         directionAnswer = cursor.fetchall()    
-        if (directionAnswer=="out"):
-            return "aaa"
+        directionAnswer = directionAnswer[0]["direction"]
+        if directionAnswer == "out":
+            query=f"SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE sessions.id={id}"
+            cursor.execute(query)
+            result_list = cursor.fetchall() 
         else:      
         # SQL = f"SELECT t1.id, t1.trucks_id, t1.bruto, \
         # CASE WHEN t1.direction = 'out' then (select t1.bruto-t1.neto AS 'truckTara' FROM sessions t1, \
