@@ -53,7 +53,7 @@ def git_api_comm():
 
        
         #maybe can be renove because after one time we have all the branch
-        os.system("git checkout origin/" + branch)
+        #os.system("git checkout origin/" + branch)
         #
         os.system("git checkout " + branch)
         os.system("git pull")
@@ -67,10 +67,13 @@ def git_api_comm():
             os.system("echo INIT VOLUME")
             os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
             os.system("echo RUNNING DOCKER-COMPOSE")
+            os.chdir(branch.lower()) 
+            os.system("ls -alF")
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
-            os.system('python3 ' + branch + '/app/test.py')
+            os.system("ls -alF")
+            os.system('python3 ./app/test.py')
             test_result = os.system('echo $?')
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
             mail_list = ""
@@ -86,8 +89,8 @@ def git_api_comm():
 
             if test_result == 0: # OK
                 os.system(str_stop)
-                os.system("git checkout staging")
-                os.system("git merge " + branch)
+                #os.system("git checkout staging")
+                #os.system("git merge " + branch)
                 os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
                 os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
