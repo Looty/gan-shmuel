@@ -2,8 +2,8 @@ from os import error
 import pymysql
 from app import app
 from db import mysql
-from flask import jsonify,request
-from datetime import datetime, date
+from flask import json, jsonify,request
+from datetime import datetime, date, time
 @app.route('/')
 def users():
     conn = mysql.connect()
@@ -20,7 +20,36 @@ def health():
     return 'ok'
     
 #222222222222222222222222222222222222222
-
+@app.route("/batch-weight/<file>", methods=['POST','GET'])
+def POST_batch_weight(filename):
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    filepath = f'./in/{filename}'
+    query = f"INSERT INTO containers (id,weight,unit) VALUES (%s,%s,%s)"
+    #case if it's JSON
+    if filepath.endswith('.json'):
+        with open(filepath,'r') as json_file:
+            data = json.load(json_file)
+            for line in data:
+                 id = line['id']
+                 weight = line['weight']
+                 unit = line['unit']
+                 values = (id, weight,unit)
+                 cursor.execute(query , values)
+    #case if it's CSV
+    elif filepath.endswith('.csv'):
+        with open(filepath,'r') as csv_file:
+            firstLine=csv_file.readline()
+            unit=firstLine.split(',')[1]
+            data=csv_file.readlines()
+            for line in data:
+                id = line.split(',')[0]
+                weight = int(line.split(',')[1])
+                values = (id, weight,unit)
+                cursor.execute(query , values)
+        return f'The file {filename} was successfully added to the DB.'
+    else:
+        return f'{filename} Error.'
 
 #333333333333333333333333333333333333333    
 @app.route("/unknown", methods=['GET'])
@@ -43,7 +72,7 @@ def GET_weight():
  
     fromTime = request.args.get('from') if request.args.get('from') else datetime.now().strftime("%Y%m%d000000") 
     toTime = request.args.get('to') if request.args.get('to') else datetime.now().strftime("%Y%m%d%H%M%S") 
-    Filter = f"('{request.args.get('filter')}')" if request.args.get('filter') else "('in', 'out', 'none')" 
+    Filter = f"('{request.args.get('filter')}')" if request.args.get('filter') else "('in' , 'out' , 'none')" 
     query="""SELECT t1.id, direction, bruto, neto, product_name, GROUP_CONCAT(t3.containers_id) as containers 
     FROM sessions AS t1 JOIN products AS t2 ON t1.products_id = t2.id 
     JOIN containers_has_sessions as t3 ON t1.id = t3.sessions_id 
@@ -136,33 +165,101 @@ def GET_session(id):
         cursor.execute(direction)
         directionAnswer = cursor.fetchall()    
         directionAnswer = directionAnswer[0]["direction"]
+        cursor.execute(f"SELECT product_name FROM products WHERE id=(SELECT products_id FROM sessions WHERE id={id});")
+        productname = cursor.fetchall()[0]["product_name"]
         if directionAnswer == "out":
             query=f"SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE sessions.id={id}"
             cursor.execute(query)
-            result_list = cursor.fetchall() 
+            result_list = cursor.fetchall()[0] 
         else:      
-        # SQL = f"SELECT t1.id, t1.trucks_id, t1.bruto, \
-        # CASE WHEN t1.direction = 'out' then (select t1.bruto-t1.neto AS 'truckTara' FROM sessions t1, \
-        #     trucks t2 WHERE t1.id = {id} and t1.trucks_id = t2.truckid ) END tara, t1.neto FROM \
-        #     sessions t1, trucks t2 WHERE t1.id = {id} and t1.trucks_id = t2.truckid"
             query=f"SELECT id, trucks_id, bruto FROM sessions WHERE id={id}"
             cursor.execute(query)
-            result_list = cursor.fetchall()      #return sql result
+            result_list = cursor.fetchall()[0] 
+        result_list["product"]= productname    #return sql result
         resp = jsonify(result_list)
         resp.status_code = 200
         return resp
-        # fields_list = cursor.description   # sql key name
-        # print("fields result -->",type(fields_list))
-        # #print("header--->",fields)
-        # cursor.close()
-        # conn.close()
     except error as e:
         return "Error while connection to Mysql"
-    # finally:
-    #     conn.close()
-    #     print ("==== mysql closed===")
+
 
 #77777777777777777777777777777777777777777777
-    
+@app.route("/weight", methods=['POST'])
+def POST_weight():
+    session_id=0
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    # take all data
+    direction=request.args.get('direction')
+    containers=request.args.get('containers')
+    weight=request.args.get('weight')
+    unit=request.args.get('unit')
+    force=request.args.get('force')
+    product=request.args.get('product')
+    truck_id=request.args.get('truckid')
+    date = datetime.now().strftime('%Y%m%d%H%M%S')
+    #pull out last direction
+    return truck_id
+    cursor.execute(f"SELECT direction FROM sessions WHERE trucks_id = {truck_id} ORDER BY date desc limit 1")
+    result=cursor.fetchall()
+    last_direction=result[0]['direction']
+    #neto
+    print()
+    cursor.execute(f'SELECT weight from containers WHERE id = "{containers}"')
+    container_weight=cursor.fetchall()[0]['weight']
+    truck_weight = cursor.execute(f'SELECT weight from trucks WHERE id = "{truck_id}"')
+    truck_weight=cursor.fetchall()[0]['weight']
+    neto=float(weight)-container_weight-truck_weight
+    #force=False - invalide direction
+    if last_direction == direction and force == False :
+        return f"Error direction for truck {truck_id}"
+    #force=True - Weight overload
+    elif last_direction == direction and force == True :
+        cursor.execute(f'"UPDATE sessions SET bruto={weight} WHERE trucks_id={truck_id} ORDER BY date desc limit 1"')
+    #none after in - Error
+    elif direction == 'none' and last_direction == 'in':
+        return f"Error direction for truck {truck_id}"
+    elif direction == 'in' or direction == 'none':
+        NewSession(direction, force, date, weight, truck_id, product)
+    elif direction == 'out':
+        #out without - Error
+        if last_direction != 'in':
+            return f"Error direction for truck {truck_id}"
+        cursor.execute(f'"UPDATE sessions SET neto={neto} WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1 "')
+        #retutn session id
+        cursor.execute(f'"SELECT id FROM sessions WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1"')
+        result=cursor.fetchall()
+        session_id=result[0]['id']
+        return f'session id: {session_id}'
+    if direction == 'in' or direction == 'none':
+            data = {
+                "id": session_id,
+                "truck": truck_id,
+                "bruto": weight
+            }
+            return json.dumps(data)
+    elif dir == 'out':
+            data = {
+                "id": session_id,
+                "truck": truck_id,
+                "bruto": weight,
+                "truckTara": truck_weight,
+                "neto": neto
+            }
+            return json.dumps(data)
+
+
+def NewSession(direction, force, date, weight, truck_id, product):
+    conn = mysql.connect()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute(f'"SELECT id FROM products WHERE product_name={product}"')
+    product_id=cursor.fetchall()[0]['id']
+    allData=(direction, force, date, weight, truck_id, product_id)
+    query = (f'INSERT into sessions (direction, f, date, bruto, trucks_id, products_id) VALUES (%s, %s, %s, %s, %s, %s)')
+    cursor.execute(query , allData)
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True,host='0.0.0.0')
