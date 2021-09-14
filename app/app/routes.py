@@ -1,5 +1,5 @@
 from flask import render_template, request, jsonify
-from pip._vendor import requests
+import requests
 from app import app
 import mysql.connector
 import sys
