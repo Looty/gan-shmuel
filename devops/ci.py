@@ -53,7 +53,7 @@ def git_api_comm():
 
        
         #maybe can be renove because after one time we have all the branch
-        #os.system("git checkout origin/" + branch)
+        os.system("git checkout origin/" + branch)
         #
         os.system("git checkout " + branch)
         os.system("git pull")
@@ -64,7 +64,9 @@ def git_api_comm():
             #os.system("docker volume rm -f " + volume_name)
 
             #add env to the volume
+            os.system("echo INIT VOLUME")
             os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+            os.system("echo RUNNING DOCKER-COMPOSE")
             os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
