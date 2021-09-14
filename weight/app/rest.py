@@ -168,7 +168,7 @@ def GET_session(id):
         cursor.execute(f"SELECT product_name FROM products WHERE id=(SELECT products_id FROM sessions WHERE id={id});")
         productname = cursor.fetchall()[0]["product_name"]
         if directionAnswer == "out":
-            query=f"SELECT sessions.id, sessions.trucks_id, sessions.bruto, sessions.neto, bruto-neto FROM sessions WHERE sessions.id={id}"
+            query=f"SELECT sessions.id, sessions.trucks_id AS truck, sessions.bruto,bruto-neto AS TruckTara, sessions.neto  FROM sessions WHERE sessions.id={id}"
             cursor.execute(query)
             result_list = cursor.fetchall()[0] 
         else:      
