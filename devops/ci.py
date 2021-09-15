@@ -16,7 +16,6 @@ WEIGHT_PATH =    "/home/" + str(USER) + "/gan-shmuel/weight"
 DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
 
 intervalHours = 720
-os.chdir("/gan-shmuel/")
 with open("logfile.log","w") as com_log:
     com_log.write("")
 
@@ -32,6 +31,7 @@ def health():
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
 
+        os.chdir("/home/ec2-user/gan-shmuel/")
         # TODO: docker-compose up TO PROD!
         os.system("echo [0]: loading commit json")
         my_commit = request.json
@@ -92,7 +92,7 @@ def git_api_comm():
 
             os.system("echo " + os.environ["PORT"])
             os.system("echo " + os.environ["TEAM_PATH"])
-            os.system("echo " + os.environ["VOLUME"])          
+            os.system("echo " + os.environ["VOLUME"])        
 
             os.system("echo [5]: docker-compose up for test")
             os.system("docker-compose up --detach --build")
@@ -143,9 +143,8 @@ def git_api_comm():
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
                 
-        os.chdir("../..")       
+        os.chdir("..")       
         return my_commit
-
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 46
@@ -182,8 +181,6 @@ def sendmail(mail_list, title, body, attachment = 1):
     except:
         print("Something Wrong")
         
-
-
 if __name__ == '__main__':
     scheduler.add_job(id ='Scheduled task', func = mailLogger , trigger = 'interval', minutes = intervalHours)
     scheduler.start()
