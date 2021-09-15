@@ -38,7 +38,7 @@ def health():
 
 @app.route('/monitor',methods=["GET"])
 def monitor():
-    return json.dumps(build_set, indent=4, sort_keys=True)
+    return print(json.dumps(build_set, indent=4, sort_keys=True))
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
