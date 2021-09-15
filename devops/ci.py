@@ -90,9 +90,9 @@ def git_api_comm():
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
                 os.environ["TEAM_PATH"] = WEIGHT_PATH
 
-            os.system("echo $TEAM_PATH")
-            os.system("echo $VOLUME")
-            os.system("echo $PORT")            
+            os.system("echo " + os.environ["PORT"])
+            os.system("echo " + os.environ["TEAM_PATH"])
+            os.system("echo " + os.environ["VOLUME"])          
 
             os.system("echo [5]: docker-compose up for test")
             os.system("docker-compose up --detach --build")
@@ -121,10 +121,10 @@ def git_api_comm():
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
 
-                os.system("echo $TEAM_PATH")
-                os.system("echo $VOLUME")
-                os.system("echo $PORT")
-
+                os.system("echo " + os.environ["PORT"])
+                os.system("echo " + os.environ["TEAM_PATH"])
+                os.system("echo " + os.environ["VOLUME"])
+                
                 os.system("echo [8]: docker-compose for staging [READY FOR STAGING]")
                 os.system("docker-compose up --detach --build")
 
