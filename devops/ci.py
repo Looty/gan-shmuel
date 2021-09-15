@@ -37,7 +37,7 @@ def health():
     return "CI up!"
 
 @app.route('/monitor',methods=["GET"])
-def health():
+def monitor():
     print(json.dumps(build_set, indent=4, sort_keys=True))
 
 @app.route('/gitcomm' , methods=['POST'])
