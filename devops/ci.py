@@ -59,7 +59,7 @@ def git_api_comm():
 
         os.system("echo '[2]: checkouting to commits branch'")
         os.system("git checkout " + branch)
-        os.system("git pull")
+        os.system("git pull -q")
 
         os.system("echo $PWD")
         os.system("ls -alF")
