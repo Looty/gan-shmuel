@@ -21,6 +21,7 @@ intervalHours = 720
 #                                     test/stage/prod
 BILLING_MONITOR_ARRAY = ["", "", ""] #["", "", "8081"]
 WEIGHT_MONITOR_ARRAY = ["", "", ""]  #["8085", "", ""]
+STATUS_MONITOR_ARRAY = ["", ""]
 
 with open("logfile.log","w") as com_log:
     com_log.write("")
@@ -35,10 +36,14 @@ def health():
 
 @app.route('/monitor',methods=["GET"])
 def monitor():
-    return render_template('monitor.html', billing = BILLING_MONITOR_ARRAY, weight = WEIGHT_MONITOR_ARRAY)
+    return render_template('monitor.html', billing = BILLING_MONITOR_ARRAY, weight = WEIGHT_MONITOR_ARRAY, status = STATUS_MONITOR_ARRAY)
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
+    global BILLING_MONITOR_ARRAY
+    global WEIGHT_MONITOR_ARRAY
+    global STATUS_MONITOR_ARRAY
+
     if request.headers['Content-Type'] == 'application/json':
 
         os.chdir("/gan-shmuel/")
@@ -96,11 +101,14 @@ def git_api_comm():
                 os.environ["VOLUME"] = DB_BILLING_PATH
                 os.environ["TEAM_PATH"] = BILLING_PATH
                 BILLING_MONITOR_ARRAY = ["8086", "", ""]
+                STATUS_MONITOR_ARRAY[0] = "testing"
+                
             elif branch == "Weight":
                 os.environ["PORT"] = "8085"
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
                 os.environ["TEAM_PATH"] = WEIGHT_PATH
                 WEIGHT_MONITOR_ARRAY = ["8085", "", ""]
+                STATUS_MONITOR_ARRAY[1] = "testing"
 
             os.system("echo " + os.environ["PORT"])
             os.system("echo " + os.environ["TEAM_PATH"])
@@ -124,16 +132,19 @@ def git_api_comm():
             if test_result == 0: # OK
                 os.system("echo [7]: test was successful! stopping test containers & settings port & volume paths")
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
+
                 if branch == "Billing":
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
-                    BILLING_MONITOR_ARRAY = ["", "", ""]
+                    BILLING_MONITOR_ARRAY = ["", "8082", ""]
+                    STATUS_MONITOR_ARRAY[0] = "exiting test"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY = ["", "8084", ""]
+                    STATUS_MONITOR_ARRAY[1] = "exiting test"
 
                 os.system("echo " + os.environ["PORT"])
                 os.system("echo " + os.environ["TEAM_PATH"])
@@ -141,6 +152,11 @@ def git_api_comm():
                 
                 os.system("echo [8]: docker-compose for staging [READY FOR STAGING]")
                 os.system("docker-compose up --detach --build")
+
+                if branch == "Billing":
+                    STATUS_MONITOR_ARRAY[0] = ""
+                elif branch == "Weight":
+                    STATUS_MONITOR_ARRAY[1] = ""
 
                 # TODO: merge with staging
                 ''' os.system("git checkout staging")
@@ -152,11 +168,13 @@ def git_api_comm():
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
                     BILLING_MONITOR_ARRAY = ["", "", "8081"]
+                    STATUS_MONITOR_ARRAY[0] = "merging for staging"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY = ["", "", "8083"]
+                    STATUS_MONITOR_ARRAY[1] = "merging for staging"
 
                 #os.system("export VOLUME=/"+ branch)
                 #WHEN MAIN WILL CLONE CORRECTLY IT WILL WORK I HOPE.
@@ -187,9 +205,8 @@ mail = Mail(app)
 @app.route('/mailer')
 def mailLogger():
     with app.app_context():
-        mail_list = ["oronboy100@gmail.com", "eilon696@gmail.com", "ron981@gmail.com",
-                    "erezmizra@gmail.com", "tovikolitz@gmail.com" , "hodaya060@gmail.com",
-                    "kfir2251@gmail.com", "Pinoubg@live.fr",
+        mail_list = ["oronboy100@gmail.com", "eilon696@gmail.com", "ron981@gmail.com", "erezmizra@gmail.com",
+                    "tovikolitz@gmail.com" , "hodaya060@gmail.com", "kfir2251@gmail.com", "Pinoubg@live.fr",
                     "efrat7024@gmail.com", "htemstet@gmail.com"]
 
         title = sendmail(mail_list, 'Commiter report!', "Hello from Green Devops AutoMailer! \nAttaching the commit log of the last " + str(intervalHours) + " hours", "logfile.log")
@@ -211,6 +228,8 @@ def sendmail(mail_list, title, body, attachment = 1):
         print("Something Wrong")
         
 if __name__ == '__main__':
+    app.jinja_env.auto_reload = True
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     scheduler.add_job(id ='Scheduled task', func = mailLogger , trigger = 'interval', minutes = intervalHours)
     scheduler.start()
     app.run(host='0.0.0.0')

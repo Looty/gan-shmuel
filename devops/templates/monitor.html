@@ -50,6 +50,12 @@
                     </tbody>
                 </table>
             </div>
+            {% if status[0] %}
+                <p class="white">Billing is in {{ status[0] }} phase</p>
+            {% endif %}
+            {% if status[1] %}
+                <p class="white">Weight is in {{ status[1] }} phase</p>
+            {% endif %}
         </div>
     </body>
 </html>
