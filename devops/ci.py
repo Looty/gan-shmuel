@@ -31,7 +31,7 @@ def health():
 def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
 
-        os.chdir("/home/ec2-user/gan-shmuel/")
+        os.chdir("/gan-shmuel/")
         # TODO: docker-compose up TO PROD!
         os.system("echo [0]: loading commit json")
         my_commit = request.json
