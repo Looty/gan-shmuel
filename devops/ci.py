@@ -8,8 +8,12 @@ app = Flask(__name__)
 scheduler = APScheduler()
 
 USER = os.environ.get('USER')
-DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
+
+BILLING_PATH =    "/home/" + str(USER) + "/gan-shmuel/billing"
 DB_BILLING_PATH = "/home/" + str(USER) + "/gan-shmuel/billing/db"
+
+WEIGHT_PATH =    "/home/" + str(USER) + "/gan-shmuel/weight"
+DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
 
 intervalHours = 720
 os.chdir("/gan-shmuel/")
@@ -34,8 +38,7 @@ def git_api_comm():
         jsonDump = json.dumps(my_commit)
         jsonLoad = json.loads(jsonDump)
 
-        branch_ref = jsonLoad["ref"] #refs/heads/Billing
-
+        branch_ref = jsonLoad["ref"]
         directory_ref = jsonLoad["commits"][-1]
         com_msg = directory_ref["message"]
         author = directory_ref["author"]['email']
@@ -63,9 +66,11 @@ def git_api_comm():
             if branch == "Billing":
                 os.environ["PORT"] = "8086"
                 os.environ["VOLUME"] = DB_BILLING_PATH
+                os.environ["TEAM_PATH"] = BILLING_PATH
             elif branch == "Weight":
                 os.environ["PORT"] = "8085"
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
+                os.environ["TEAM_PATH"] = WEIGHT_PATH
 
             os.system("echo $VOLUME")
             os.system("echo $PORT")            
@@ -75,8 +80,7 @@ def git_api_comm():
             # os.system("echo RUNNING DOCKER-COMPOSE")
             # os.chdir(branch.lower()) 
             # os.system("ls -alF")
-            #os.system("docker-compose --env-file ./config/.env.test up --detach --build")
-            #
+            # os.system("docker-compose --env-file ./config/.env.test up --detach --build"
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system("ls -alF")
             os.system('python3 app/test.py')
@@ -96,11 +100,15 @@ def git_api_comm():
                 if branch == "Billing":
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
+                    os.environ["TEAM_PATH"] = BILLING_PATH
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
+                    os.environ["TEAM_PATH"] = WEIGHT_PATH
 
-                os.system(up)                
+                os.system(up)
+
+                # TODO: merge with staging
                 #os.system("git checkout staging")
                 #os.system("git merge " + branch)
                 #os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
@@ -113,14 +121,13 @@ def git_api_comm():
             else:
                 os.system(str_stop)
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
+                
         os.chdir("../..")       
         return my_commit
 
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-# app.config['MAIL_USERNAME'] = os.environ['MAIL_USERNAME']
-# app.config['MAIL_PASSWORD'] = os.environ['MAIL_PASSWORD']
+app.config['MAIL_PORT'] = 46
 app.config['MAIL_USERNAME'] ='autmailer101@gmail.com'
 app.config['MAIL_PASSWORD'] ='12341234!'
 app.config['MAIL_USE_TLS'] = False
@@ -141,7 +148,7 @@ def mailLogger():
             com_log.write("")
     return title
 
-def sendmail(mail_list, title, body, attachment=1):
+def sendmail(mail_list, title, body, attachment = 1):
     try:
         for m in range(len(mail_list)):
             msg = Message(title, sender = 'autmailer101@gmail.com', recipients = [mail_list[m]])
