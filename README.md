@@ -1,2 +1,0 @@
-# gan-shmuel
-# Devops
