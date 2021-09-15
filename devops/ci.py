@@ -176,7 +176,7 @@ def git_api_comm():
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
         else:
             os.system("echo [3]: Restarting CI docker-compose")
-            os.system("docker-compose up --build")
+            os.system("docker-compose -f devops/docker-compose.yml up --build")
 
         os.chdir("..")       
         return my_commit
