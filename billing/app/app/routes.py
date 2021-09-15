@@ -1,12 +1,7 @@
 from flask import render_template, request, jsonify
-import requests
+from pip._vendor import requests
 from app import app
-import mysql.connector
-import sys
-import json
-import os
-import datetime
-import random
+import mysql.connector, sys, json, os, datetime, random
 
 
 # initialize connection to database 'billdb' in mysql server
@@ -15,14 +10,8 @@ def init_db():
         password='root', 
         user='root', 
         host='bdb', 
-        database='billdb')
-
-
-# convert mysql table into json response objec
-def to_json(cursor):
-    headers = [col[0] for col in cursor.description]
-    rows = cursor.fetchall()
-    return jsonify(list(map(lambda row: dict(zip(headers,row)) ,rows)))
+        database='billdb'
+    )
 
 
 # default page of the application
@@ -39,7 +28,6 @@ def health():
         conn = init_db()
         mycursor = conn.cursor()
         mycursor.execute("show tables")
-        # res stores the output of the last executed command
         res = str(mycursor.fetchall())
     except:
         return "failed connecting to the database", 500
@@ -53,30 +41,28 @@ def postProvider():
     try:
         conn = init_db()
         mycursor = conn.cursor()
-        # execute: insert 'name' into 'Provider' table (id created automatically)
         val = [request.args.get("name")]
-        valtest = val[0]
-        if not isinstance(valtest, str) or len(val)>255:
+        # check if the input name is valid
+        if not isinstance(val[0], str) or len(val)>255:
             return "bad type or length inserted", 400
-        
+        # check if the name already exist in the database
         sql = """SELECT * FROM Provider WHERE name=%s"""
         mycursor.execute(sql, val)
         if mycursor.fetchone():
             return "name already exist", 400
-        
+        # execute: insert 'name' into 'Provider' table (id created automatically)
         sql = """INSERT INTO Provider (name) VALUES (%s)"""
-        val = ([request.args.get("name")])
         mycursor.execute(sql, val)
         id = mycursor.lastrowid
         if not id:
-            return "inserting new name failed",500
-        
-        retjson = {"id":id}
+            return "inserting new name failed", 500
+        retjson = {
+                    "id": id
+                }
     except:
         return "db error", 500
     else:
-        print("provider '" + request.args.get("name") + "' added with the id: " + str(id), file=sys.stderr)
-        return json.dumps(retjson, indent=""), 200
+        return jsonify(retjson), 200
 
 
 # update a provider element (id, name) in the 'Provider' table in the database 
@@ -85,7 +71,7 @@ def putProvide(id):
     try:
         conn = init_db()
         mycursor = conn.cursor()
-        val = ([request.args.get("name"), id])
+        val = [request.args.get("name"), id]
         # execute: update the 'name' of the wanted provider id ('id') in the 'Provider' table
         sql = """UPDATE Provider SET name = %s WHERE id = %s"""
         mycursor.execute(sql, val)
@@ -102,23 +88,22 @@ def postTrucks():
         conn = init_db()
         mycursor = conn.cursor()
         id = request.args.get("id")
-        val = ([id, request.args.get("provider_id")])
-        
-        testid =[id]          
+        val = [id, request.args.get("provider_id")]
+        # check if the truck id already exist
         sql = """SELECT * FROM Trucks WHERE id=%s"""
-        mycursor.execute(sql, testid)
+        mycursor.execute(sql, [id])
         if mycursor.fetchone():
             return "truck license plate already exist", 400
-        
         # execute: insert 'id' and 'provider_id' into 'Trucks' table
         sql = """INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)"""
-       # val = ([id, request.args.get("provider_id")])
         mycursor.execute(sql, val)
-        retjson = {"id":id}
+        retjson = {
+                    "id": id
+                }
     except:
         return "db error", 500
     else:
-        return json.dumps(retjson, indent=""), 200
+        return jsonify(retjson), 200
     
 
 # update a truck element (id, provider_id) in the 'Trucks' table in the database
@@ -133,7 +118,7 @@ def putTrucks(id):
     except:
         return "db error", 500
     else:
-        return "on id: " + id + ", updated id to : " + request.args.get("provider_id"), 200
+        return "on id: " + id + ", updated provider id to : " + request.args.get("provider_id"), 200
 
 
 # update 'Rates' table in the database, from a .csv file
@@ -147,24 +132,18 @@ def postRates():
         mycursor.execute(sql)
         filename = request.args.get("file")
         filename = os.path.join("..","in", filename)
-        rates = []
         if not os.path.isfile(filename):
-            return "file does not exist inside /in directory"
-        
-        with open (filename, "r" ) as exelfile:
-            lines = exelfile.readlines()
-            headers = lines[0][:-1].split(",")
+            return "file does not exist inside /in directory", 404
+        # rates is list of lists: [['Navel', '93', 'All'], ['Blood', '112', 'All'], ['Mandarin', '104', 'All'], ...]
+        rates = []
+        with open (filename, "r" ) as csv_file:
+            lines = csv_file.readlines()
             for line in lines[1:]:
-                row = dict()
                 values = line[:-1].split(",")
-                for i in range(len(headers)):
-                    row[headers[i]] = values[i] 
-                rates.append(row)
+                rates.append([values[0], values[1], values[2]])
             sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%s, %s, %s)"""
-            mycursor.executemany(sql, map(lambda r: [r["Product"], r["Rate"], r["Scope"]], rates))
-    except Exception as inst:
-        print(type(inst),file=sys.stderr)    # the exception instance
-        print(inst.args,file=sys.stderr)     # arguments stored in .args
+            mycursor.executemany(sql, rates)
+    except:
         return "db error", 500
     else:
         return "rates table updated successfully",200
@@ -176,10 +155,13 @@ def getRates():
         conn = init_db()
         mycursor = conn.cursor()
         mycursor.execute("SELECT product_id,rate,scope FROM Rates")
+        headers = [col[0] for col in mycursor.description]
+        rows = mycursor.fetchall()
     except Exception as inst:
         return "db error", 500
     else:
-        return to_json(mycursor), 200
+        # convert mysql table into dictionary and then to json response objec
+        return jsonify(list(map(lambda row: dict(zip(headers,row)) ,rows))), 200
 
 
 @app.route('/session/<id>', methods=['GET'])
@@ -310,3 +292,13 @@ def getBill(id):
         # session = getSession(id)
         # get the weights from the session
         # weight = json.loads(session[0].replace("'", "\"").replace("\n", ""))["neto"]
+
+
+
+# if conn.is_connected():
+#         cursor = conn.cursor()
+#         cursor.execute("CREATE DATABASE employee")
+
+
+# print(type(inst),file=sys.stderr)    # the exception instance
+# print(inst.args,file=sys.stderr)     # arguments stored in .args
