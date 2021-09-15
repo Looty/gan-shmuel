@@ -59,9 +59,13 @@ def git_api_comm():
         os.system("git checkout " + branch)
         os.system("git pull")
 
+        os.system("echo $PWD")
+        os.system("ls -alF")
+
         if branch != "Devops":
             os.chdir(branch.lower()) 
-            os.system("ls -alF")            
+            os.system("echo $PWD")
+            os.system("ls -alF")           
 
             if branch == "Billing":
                 os.environ["PORT"] = "8086"
@@ -82,6 +86,8 @@ def git_api_comm():
             # os.system("ls -alF")
             # os.system("docker-compose --env-file ./config/.env.test up --detach --build"
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
+            os.system("echo $PWD")
+            os.system("ls -alF")
             os.system("ls -alF")
             os.system('python3 app/test.py')
             test_result = os.system('echo $?')
