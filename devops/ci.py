@@ -1,12 +1,15 @@
 import os
-from flask import Flask, request ,json
+from flask import Flask, request, json
 import datetime
-from flask import Response
 from flask_mail import Mail, Message
 from flask_apscheduler import APScheduler
 
 app = Flask(__name__)
 scheduler = APScheduler()
+
+USER = os.environ.get('USER')
+DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
+DB_BILLING_PATH = "/home/" + str(USER) + "/gan-shmuel/billing/db"
 
 intervalHours = 720
 os.chdir("/gan-shmuel/")
@@ -15,11 +18,11 @@ with open("logfile.log","w") as com_log:
 
 @app.route('/', methods=['GET'])
 def main():
-    return "wellcome to CI"
+    return "welcome to CI!"
 
 @app.route('/health',methods=["GET"])
 def health():
-    return "CI up"
+    return "CI up!"
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
@@ -45,54 +48,67 @@ def git_api_comm():
 
         os.system("cat print.txt")
 
-        # [12/09/2021 10:41:38] made by .com on branch main 28282828
         with open("logfile.log", "a") as com_log:
             date = datetime.datetime.now()
             dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
             com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
-       
-        #maybe can be renove because after one time we have all the branch
-        #os.system("git checkout origin/" + branch)
-        #
         os.system("git checkout " + branch)
         os.system("git pull")
 
         if branch != "Devops":
-            #volume_name= "gan-shmuel_" + branch.lower() + "_data"
-            #volume_name= "gan-shmuel_data"
-            #os.system("docker volume rm -f " + volume_name)
-
-            #add env to the volume
-            os.system("echo INIT VOLUME")
-            os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
-            os.system("echo RUNNING DOCKER-COMPOSE")
             os.chdir(branch.lower()) 
-            os.system("ls -alF")
-            os.system("docker-compose --env-file ./config/.env.test up --detach --build")
+            os.system("ls -alF")            
+
+            if branch == "Billing":
+                os.environ["PORT"] = "8086"
+                os.environ["VOLUME"] = DB_BILLING_PATH
+            elif branch == "Weight":
+                os.environ["PORT"] = "8085"
+                os.environ["VOLUME"] = DB_WEIGHT_PATH
+
+            os.system("echo $VOLUME")
+            os.system("echo $PORT")            
+            up = "docker-compose up --detach --build"
+            
+            os.system(up)
+            # os.system("echo RUNNING DOCKER-COMPOSE")
+            # os.chdir(branch.lower()) 
+            # os.system("ls -alF")
+            #os.system("docker-compose --env-file ./config/.env.test up --detach --build")
             #
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system("ls -alF")
-            os.system('python3 ./app/test.py')
+            os.system('python3 app/test.py')
             test_result = os.system('echo $?')
             str_stop = "docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')"
             mail_list = ""
 
-            if (branch == "Devops"):
-                    mail_list = ["eilon696@gmail.com", author]
-            elif (branch == "Billing"):
-                    mail_list = ["oronboy100@gmail.com", author]
+            if (branch == "Billing"):
+                mail_list = ["oronboy100@gmail.com", author]
             elif (branch == "Weight"):
-                    mail_list = ["ron981@gmail.com", author]
+                mail_list = ["ron981@gmail.com", author]
             else:
-                    mail_list = ["eilon696@gmail.com", author]
+                mail_list = ["eilon696@gmail.com", author]
 
             if test_result == 0: # OK
                 os.system(str_stop)
+                if branch == "Billing":
+                    os.environ["PORT"] = "8082"
+                    os.environ["VOLUME"] = DB_BILLING_PATH
+                elif branch == "Weight":
+                    os.environ["PORT"] = "8084"
+                    os.environ["VOLUME"] = DB_WEIGHT_PATH
+
+                os.system(up)                
                 #os.system("git checkout staging")
                 #os.system("git merge " + branch)
-                os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
-                os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
+                #os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+
+                #os.system("export VOLUME=/"+ branch)
+                #WHEN MAIN WILL CLONE CORRECTLY IT WILL WORK I HOPE.
+
+                #os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
             else:
                 os.system(str_stop)
@@ -117,7 +133,7 @@ def mailLogger():
     with app.app_context():
         mail_list = ["oronboy100@gmail.com", "eilon696@gmail.com", "ron981@gmail.com",
                     "erezmizra@gmail.com", "tovikolitz@gmail.com" , "hodaya060@gmail.com",
-                    "kfir2251@gmail.com", "c0527606305@gmail.com", "Pinoubg@live.fr",
+                    "kfir2251@gmail.com", "Pinoubg@live.fr",
                     "efrat7024@gmail.com", "htemstet@gmail.com"]
 
         title = sendmail(mail_list, 'Commiter report!', "Hello from Green Devops AutoMailer! \nAttaching the commit log of the last " + str(intervalHours) + " hours", "logfile.log")
