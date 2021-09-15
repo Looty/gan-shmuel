@@ -20,7 +20,7 @@ intervalHours = 720
 
 #                                     test/stage/prod
 BILLING_MONITOR_ARRAY = ["", "", ""] #["", "", "8081"]
-WEIGHT_MONITOR_ARRAY = ["8085", "", ""]  #["8085", "", ""]
+WEIGHT_MONITOR_ARRAY = ["", "", ""]  #["8085", "", ""]
 
 with open("logfile.log","w") as com_log:
     com_log.write("")
