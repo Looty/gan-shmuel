@@ -8,13 +8,11 @@ from flask_apscheduler import APScheduler
 app = Flask(__name__)
 scheduler = APScheduler()
 
-USER = "ec2-user" #os.environ.get('USER')
+BILLING_PATH =    "/home/ec2-user/gan-shmuel/billing"
+DB_BILLING_PATH = "/home/ec2-user/gan-shmuel/billing/db"
 
-BILLING_PATH =    "/home/" + str(USER) + "/gan-shmuel/billing"
-DB_BILLING_PATH = "/home/" + str(USER) + "/gan-shmuel/billing/db"
-
-WEIGHT_PATH =    "/home/" + str(USER) + "/gan-shmuel/weight"
-DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
+WEIGHT_PATH =    "/home/ec2-user/gan-shmuel/weight"
+DB_WEIGHT_PATH = "/home/ec2-user/gan-shmuel/weight/db"
 
 intervalHours = 720
 
@@ -101,14 +99,14 @@ def git_api_comm():
                 os.environ["PORT"] = "8086"
                 os.environ["VOLUME"] = DB_BILLING_PATH
                 os.environ["TEAM_PATH"] = BILLING_PATH
-                BILLING_MONITOR_ARRAY = ["8086", "", ""]
+                BILLING_MONITOR_ARRAY[0] = "8086"
                 STATUS_MONITOR_ARRAY[0] = "testing"
                 
             elif branch == "Weight":
                 os.environ["PORT"] = "8085"
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
                 os.environ["TEAM_PATH"] = WEIGHT_PATH
-                WEIGHT_MONITOR_ARRAY = ["8085", "", ""]
+                WEIGHT_MONITOR_ARRAY[0] = "8085"
                 STATUS_MONITOR_ARRAY[1] = "testing"
 
             os.system("echo " + os.environ["PORT"])
@@ -117,10 +115,6 @@ def git_api_comm():
 
             os.system("echo [5]: docker-compose up for test")
             os.system("docker-compose up --detach --build")
-            # os.system("echo RUNNING DOCKER-COMPOSE")
-            # os.chdir(branch.lower()) 
-            # os.system("ls -alF")
-            # os.system("docker-compose --env-file ./config/.env.test up --detach --build"
             os.system("echo [5.5]: exec to test container and loading test")
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system("echo $PWD")
@@ -138,13 +132,15 @@ def git_api_comm():
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
-                    BILLING_MONITOR_ARRAY = ["", "8082", ""]
+                    BILLING_MONITOR_ARRAY[0] = ""
+                    BILLING_MONITOR_ARRAY[1] = "8082"
                     STATUS_MONITOR_ARRAY[0] = "exiting test"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
-                    WEIGHT_MONITOR_ARRAY = ["", "8084", ""]
+                    WEIGHT_MONITOR_ARRAY[0] = ""
+                    WEIGHT_MONITOR_ARRAY[1] = "8084"
                     STATUS_MONITOR_ARRAY[1] = "exiting test"
 
                 os.system("echo " + os.environ["PORT"])
@@ -171,7 +167,7 @@ def git_api_comm():
                     BILLING_MONITOR_ARRAY[2] = "8081"
                     STATUS_MONITOR_ARRAY[0] = "merging for staging"
                 elif branch == "Weight":
-                    os.environ["PORT"] = "8084"
+                    os.environ["PORT"] = "8083"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY[2] = "8083"
@@ -188,7 +184,6 @@ def git_api_comm():
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
         else:
             os.system("echo [3]: Restarting CI docker-compose")
-            #os.chdir("devops/")
             os.system("docker-compose up --build")
 
         STATUS_MONITOR_ARRAY[2] = ""
