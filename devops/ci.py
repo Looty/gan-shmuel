@@ -21,7 +21,7 @@ intervalHours = 720
 #                                     test/stage/prod
 BILLING_MONITOR_ARRAY = ["", "", ""] #["", "", "8081"]
 WEIGHT_MONITOR_ARRAY = ["", "", ""]  #["8085", "", ""]
-STATUS_MONITOR_ARRAY = ["", ""]
+STATUS_MONITOR_ARRAY = ["", "", ""]
 
 with open("logfile.log","w") as com_log:
     com_log.write("")
@@ -45,6 +45,7 @@ def git_api_comm():
     global STATUS_MONITOR_ARRAY
 
     if request.headers['Content-Type'] == 'application/json':
+        STATUS_MONITOR_ARRAY[2] = "working"
 
         os.chdir("/gan-shmuel/")
         # TODO: docker-compose up TO PROD!
@@ -167,13 +168,13 @@ def git_api_comm():
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
-                    BILLING_MONITOR_ARRAY = ["", "", "8081"]
+                    BILLING_MONITOR_ARRAY[2] = "8081"
                     STATUS_MONITOR_ARRAY[0] = "merging for staging"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
-                    WEIGHT_MONITOR_ARRAY = ["", "", "8083"]
+                    WEIGHT_MONITOR_ARRAY[2] = "8083"
                     STATUS_MONITOR_ARRAY[1] = "merging for staging"
 
                 #os.system("export VOLUME=/"+ branch)
@@ -190,6 +191,7 @@ def git_api_comm():
             #os.chdir("devops/")
             os.system("docker-compose up --build")
 
+        STATUS_MONITOR_ARRAY[2] = ""
         os.chdir("..")       
         return my_commit
 

@@ -50,6 +50,9 @@
                     </tbody>
                 </table>
             </div>
+            {% if status[2] %}
+                <p class="white">Still working on a certain commit..</p>
+            {% endif %}
             {% if status[0] %}
                 <p class="white">Billing is in {{ status[0] }} phase</p>
             {% endif %}
