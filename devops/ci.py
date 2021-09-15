@@ -174,7 +174,10 @@ def git_api_comm():
                 os.system("echo [7]: test was unsuccessful! stopping test containers!!")
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
-                
+        else:
+            os.system("echo [3]: Restarting CI docker-compose")
+            os.system("docker-compose up --build")
+
         os.chdir("..")       
         return my_commit
 
