@@ -33,7 +33,7 @@ def git_api_comm():
     if request.headers['Content-Type'] == 'application/json':
 
         # TODO: docker-compose up TO PROD!
-        os.system("echo [0]: loading commit json")
+        os.system("echo '[0]: loading commit json'")
         my_commit = request.json
         jsonDump = json.dumps(my_commit)
         jsonLoad = json.loads(jsonDump)
@@ -44,7 +44,7 @@ def git_api_comm():
         author = directory_ref["author"]['email']
         branch = branch_ref.split("/")[2]
 
-        os.system("echo [1]: printing json results")
+        os.system("echo '[1]: printing json results'")
         with open("print.txt", "a+") as f:
             f.write(str(author) + "\n")
             f.write(str(com_msg) + "\n")
@@ -57,20 +57,30 @@ def git_api_comm():
             dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
             com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
-        os.system("echo [2]: checkouting to commit's branch")
+        os.system("echo '[2]: checkouting to commits branch'")
         os.system("git checkout " + branch)
         os.system("git pull")
 
         os.system("echo $PWD")
         os.system("ls -alF")
 
+        mail_list = ""
+        if (branch == "Devops"):
+            mail_list = ["eilon696@gmail.com", author]
+        elif (branch == "Billing"):
+            mail_list = ["oronboy100@gmail.com", author]
+        elif (branch == "Weight"):
+            mail_list = ["ron981@gmail.com", author]
+        else:
+            mail_list = ["eilon696@gmail.com", author]
+
         if branch != "Devops":
-            os.system("echo [3]: switching to branch dir")
+            os.system("echo '[3]: switching to branch dir'")
             os.chdir(branch.lower()) 
             os.system("echo $PWD")
             os.system("ls -alF")           
 
-            os.system("echo [4]: settings port and volume paths")
+            os.system("echo '[4]: settings port and volume paths'")
             if branch == "Billing":
                 os.environ["PORT"] = "8086"
                 os.environ["VOLUME"] = DB_BILLING_PATH
@@ -84,31 +94,23 @@ def git_api_comm():
             os.system("echo $VOLUME")
             os.system("echo $PORT")            
 
-            os.system("echo [5]: docker-compose up for test")
+            os.system("echo '[5]: docker-compose up for test'")
             os.system("docker-compose up --detach --build")
             # os.system("echo RUNNING DOCKER-COMPOSE")
             # os.chdir(branch.lower()) 
             # os.system("ls -alF")
             # os.system("docker-compose --env-file ./config/.env.test up --detach --build"
-            os.system("echo [5.5]: exec to test container and loading test")
+            os.system("echo '[5.5]: exec to test container and loading test'")
             os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
             os.system("echo $PWD")
             os.system("ls -alF")
             os.system('python3 app/test.py')
             test_result = os.system('echo $?')
 
-            os.system("echo [6]: stopping test's containers")
-            mail_list = ""
-
-            if (branch == "Billing"):
-                mail_list = ["oronboy100@gmail.com", author]
-            elif (branch == "Weight"):
-                mail_list = ["ron981@gmail.com", author]
-            else:
-                mail_list = ["eilon696@gmail.com", author]
+            os.system("echo '[6]: stopping tests containers'")
 
             if test_result == 0: # OK
-                os.system("echo [7]: test was successful! stopping test containers & settings port & volume paths")
+                os.system("echo '[7]: test was successful! stopping test containers & settings port & volume paths'")
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
                 if branch == "Billing":
                     os.environ["PORT"] = "8082"
@@ -119,7 +121,7 @@ def git_api_comm():
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
 
-                os.system("echo [8]: docker-compose for staging")
+                os.system("echo '[8]: docker-compose for staging'")
                 os.system("docker-compose up --detach --build")
 
                 # TODO: merge with staging
@@ -133,7 +135,7 @@ def git_api_comm():
                 #os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
                 sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
             else:
-                os.system("echo [7]: test was unsuccessful! stopping test containers")
+                os.system("echo '[7]: test was unsuccessful! stopping test containers!!'")
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
                 
