@@ -2,6 +2,7 @@ import os
 from flask import Flask, request, json
 import datetime
 from flask_mail import Mail, Message
+from flask import render_template
 from flask_apscheduler import APScheduler
 
 app = Flask(__name__)
@@ -17,13 +18,9 @@ DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
 
 intervalHours = 720
 
-# monitor JSON -> /monitor
-# [Billing:XXXX, Weight:XXXX]
-build_set = {
-    "Testing": ["", ""],
-    "Staging": ["", ""],
-    "Production": ["", ""]
-}
+#                                     test/stage/prod
+BILLING_MONITOR_ARRAY = ["", "", ""] #["", "", "8081"]
+WEIGHT_MONITOR_ARRAY = ["8085", "", ""]  #["8085", "", ""]
 
 with open("logfile.log","w") as com_log:
     com_log.write("")
@@ -38,7 +35,7 @@ def health():
 
 @app.route('/monitor',methods=["GET"])
 def monitor():
-    return print(json.dumps(build_set, indent=4, sort_keys=True))
+    return render_template('monitor.html', billing = BILLING_MONITOR_ARRAY, weight = WEIGHT_MONITOR_ARRAY)
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
@@ -98,12 +95,12 @@ def git_api_comm():
                 os.environ["PORT"] = "8086"
                 os.environ["VOLUME"] = DB_BILLING_PATH
                 os.environ["TEAM_PATH"] = BILLING_PATH
-                build_set['Testing'][0] = "Billing:8086"
+                BILLING_MONITOR_ARRAY = ["8086", "", ""]
             elif branch == "Weight":
                 os.environ["PORT"] = "8085"
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
                 os.environ["TEAM_PATH"] = WEIGHT_PATH
-                build_set['Testing'][1] = "Weight:8085"
+                WEIGHT_MONITOR_ARRAY = ["8085", "", ""]
 
             os.system("echo " + os.environ["PORT"])
             os.system("echo " + os.environ["TEAM_PATH"])
@@ -131,14 +128,12 @@ def git_api_comm():
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
-                    build_set['Testing'][0] = ""
-                    build_set['Staging'][0] = "Billing:8082"
+                    BILLING_MONITOR_ARRAY = ["", "", ""]
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
-                    build_set['Testing'][1] = ""
-                    build_set['Staging'][1] = "Weight:8084"
+                    WEIGHT_MONITOR_ARRAY = ["", "8084", ""]
 
                 os.system("echo " + os.environ["PORT"])
                 os.system("echo " + os.environ["TEAM_PATH"])
@@ -156,14 +151,12 @@ def git_api_comm():
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
-                    build_set['Staging'][0] = ""
-                    build_set['Production'][0] = "Billing:8081"
+                    BILLING_MONITOR_ARRAY = ["", "", "8081"]
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
-                    build_set['Staging'][1] = ""
-                    build_set['Production'][1] = "Weight:8083"
+                    WEIGHT_MONITOR_ARRAY = ["", "", "8083"]
 
                 #os.system("export VOLUME=/"+ branch)
                 #WHEN MAIN WILL CLONE CORRECTLY IT WILL WORK I HOPE.

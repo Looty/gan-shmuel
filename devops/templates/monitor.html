@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Monitor Page</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    </head>
+    <style>
+        body {
+            font-size: 26px
+        }
+        .white {
+            color: white
+        }
+        .black {
+            color: #22272e
+        }
+    </style>
+    
+    <body class="text-center" style="background-color: #22272e;">
+        <div class="container">
+            <div class="text-center">
+                <br />
+                <p class="white" style="font-size: 40px;">Monitor status for all services</p>
+                <br />
+                <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-center white">Service</th>
+                            <th scope="col" class="text-center white">Testing</th>
+                            <th scope="col" class="text-center white">Staging</th>
+                            <th scope="col" class="text-center white">Production</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-success black">
+                            <td>Billing</td>
+                            <td class="text-success">{{ billing[0] }}</td>
+                            <td class="text-success">{{ billing[1] }}</td>
+                            <td class="text-success">{{ billing[2] }}</td>
+                        </tr>
+                        <tr class="bg-info black">
+                            <td>Weight</td>
+                            <td class="text-success">{{ weight[0] }}</td>
+                            <td class="text-success">{{ weight[1] }}</td>
+                            <td class="text-success">{{ weight[2] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
