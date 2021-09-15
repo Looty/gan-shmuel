@@ -16,6 +16,15 @@ WEIGHT_PATH =    "/home/" + str(USER) + "/gan-shmuel/weight"
 DB_WEIGHT_PATH = "/home/" + str(USER) + "/gan-shmuel/weight/db"
 
 intervalHours = 720
+
+# monitor JSON -> /monitor
+# [Billing:XXXX, Weight:XXXX]
+build_set = {
+    "Testing": ["", ""],
+    "Staging": ["", ""],
+    "Production": ["", ""]
+}
+
 with open("logfile.log","w") as com_log:
     com_log.write("")
 
@@ -26,6 +35,10 @@ def main():
 @app.route('/health',methods=["GET"])
 def health():
     return "CI up!"
+
+@app.route('/monitor',methods=["GET"])
+def health():
+    print(json.dumps(build_set, indent=4, sort_keys=True))
 
 @app.route('/gitcomm' , methods=['POST'])
 def git_api_comm():
@@ -59,7 +72,7 @@ def git_api_comm():
 
         os.system("echo [2]: checkouting to commits on relevent branch")
         os.system("git checkout " + branch)
-        os.system("git pull -q")
+        os.system("git pull") # -q to quiet output
 
         os.system("echo $PWD")
         os.system("ls -alF")
@@ -85,10 +98,12 @@ def git_api_comm():
                 os.environ["PORT"] = "8086"
                 os.environ["VOLUME"] = DB_BILLING_PATH
                 os.environ["TEAM_PATH"] = BILLING_PATH
+                build_set['Testing'][0] = "Billing:8086"
             elif branch == "Weight":
                 os.environ["PORT"] = "8085"
                 os.environ["VOLUME"] = DB_WEIGHT_PATH
                 os.environ["TEAM_PATH"] = WEIGHT_PATH
+                build_set['Testing'][1] = "Weight:8085"
 
             os.system("echo " + os.environ["PORT"])
             os.system("echo " + os.environ["TEAM_PATH"])
@@ -116,10 +131,14 @@ def git_api_comm():
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
+                    build_set['Testing'][0] = ""
+                    build_set['Staging'][0] = "Billing:8082"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8084"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
+                    build_set['Testing'][1] = ""
+                    build_set['Staging'][1] = "Weight:8084"
 
                 os.system("echo " + os.environ["PORT"])
                 os.system("echo " + os.environ["TEAM_PATH"])
@@ -129,14 +148,27 @@ def git_api_comm():
                 os.system("docker-compose up --detach --build")
 
                 # TODO: merge with staging
-                #os.system("git checkout staging")
-                #os.system("git merge " + branch)
-                #os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+                ''' os.system("git checkout staging")
+                os.system("git merge " + branch)
+                os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+
+                if branch == "Billing":
+                    os.environ["PORT"] = "8082"
+                    os.environ["VOLUME"] = DB_BILLING_PATH
+                    os.environ["TEAM_PATH"] = BILLING_PATH
+                    build_set['Staging'][0] = ""
+                    build_set['Production'][0] = "Billing:8081"
+                elif branch == "Weight":
+                    os.environ["PORT"] = "8084"
+                    os.environ["VOLUME"] = DB_WEIGHT_PATH
+                    os.environ["TEAM_PATH"] = WEIGHT_PATH
+                    build_set['Staging'][1] = ""
+                    build_set['Production'][1] = "Weight:8083"
 
                 #os.system("export VOLUME=/"+ branch)
                 #WHEN MAIN WILL CLONE CORRECTLY IT WILL WORK I HOPE.
 
-                #os.system("docker-compose --env-file ./config/.env.stg up --detach --build")
+                os.system("docker-compose --env-file ./config/.env.stg up --detach --build")'''
                 sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
             else:
                 os.system("echo [7]: test was unsuccessful! stopping test containers!!")
