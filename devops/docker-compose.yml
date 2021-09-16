@@ -3,8 +3,8 @@ services:
   ci:
     build:
       context: .
-        args:
-          GITOKEN: token
+      args:
+        GITOKEN: token
     ports:
       - "8080:5000"
     volumes:
