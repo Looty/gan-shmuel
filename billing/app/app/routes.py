@@ -67,18 +67,30 @@ def postProvider():
 
 # update a provider element (id, name) in the 'Provider' table in the database 
 @app.route('/provider/<id>', methods = ['PUT'])
-def putProvide(id):    
+def putProvider(id):    
     try:
         conn = init_db()
         mycursor = conn.cursor()
-        val = [request.args.get("name"), id]
-        # execute: update the 'name' of the wanted provider id ('id') in the 'Provider' table
-        sql = """UPDATE Provider SET name = %s WHERE id = %s"""
-        mycursor.execute(sql, val)
+        provider_name = request.args.get("name")
+        # check if the provider id exist
+        sql = """SELECT * FROM Provider WHERE id=%s"""
+        mycursor.execute(sql, [id])
+        res = mycursor.fetchone()                           # res is a tuple: (id, 'name')
+        msg = ""
+        if not res:
+            return "provider id " + id +" doesn't exist.", 400
+        elif res[1] == provider_name:
+            msg = " already exist."
+        else:
+            # execute: update the 'name' of the wanted provider id ('id') in the 'Provider' table
+            sql = """UPDATE Provider SET name = %s WHERE id = %s"""
+            val = [provider_name, id]
+            mycursor.execute(sql, val)
+            msg = " updated."
     except:
         return "db error", 500
     else:
-        return "on id: " + str(id) + ", updated Provider name to : " + request.args.get("name"), 200
+        return "on id: " + str(id) + " Provider name: " + provider_name + msg, 200
 
 
 # create a new truck element (id, provider_id) and insert it to the 'Trucks' table in the database
@@ -88,23 +100,33 @@ def postTrucks():
         conn = init_db()
         mycursor = conn.cursor()
         id = request.args.get("id")
-        val = [id, request.args.get("provider_id")]
+        provider_id = request.args.get("provider_id")
+        val = [id, provider_id]
+        # check if the given provider id exist
+        sql = """SELECT * FROM Provider WHERE id=%s"""
+        mycursor.execute(sql, [provider_id])
+        provider_res = mycursor.fetchone()
+        if not provider_res:
+            return "provider id " + provider_id +" doesn't exist.", 400
         # check if the truck id already exist
         sql = """SELECT * FROM Trucks WHERE id=%s"""
         mycursor.execute(sql, [id])
-        if mycursor.fetchone():
-            return "truck license plate already exist", 400
+        truck_res = mycursor.fetchone()
+        if truck_res:
+            return "truck license plate: " + id + " already exist", 200
         # execute: insert 'id' and 'provider_id' into 'Trucks' table
         sql = """INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)"""
         mycursor.execute(sql, val)
         retjson = {
-                    "id": id
+                    "id": id,
+                    "provider id": provider_id
                 }
     except:
         return "db error", 500
     else:
         return jsonify(retjson), 200
     
+# select * from Trucks, Provider where Trucks.provider_id=Provider.id and Provider.id=3;
 
 # update a truck element (id, provider_id) in the 'Trucks' table in the database
 @app.route('/truck/<id>', methods = ['PUT'])
@@ -112,13 +134,31 @@ def putTrucks(id):
     try:
         conn = init_db()
         mycursor = conn.cursor()
+        provider_id = request.args.get("provider_id")
+        # check if the given provider id exist
+        sql = """SELECT * FROM Provider WHERE id=%s"""
+        mycursor.execute(sql, [provider_id])
+        provider_res = mycursor.fetchone()
+        if not provider_res:
+            return "provider id " + provider_id +" doesn't exist.", 400
+        # check if the truck id exist
+        sql = """SELECT * FROM Trucks, Provider WHERE Trucks.provider_id=Provider.id AND Trucks.id=%s"""
+        mycursor.execute(sql, [id])
+        truck_res = mycursor.fetchone()
+        if not truck_res:
+            return "truck license plate " + id + " doesn't exist.", 400
+        # check if the provider id hasn't changed
+        previos_provider = str(truck_res[2])
+        if previos_provider == provider_id:
+            return "provider id: " + provider_id + " is already up to date.", 200
+        # update the truck's provider id
         sql = """UPDATE Trucks SET provider_id = %s WHERE id = %s"""
-        val = ([request.args.get("provider_id"), id])
+        val = ([provider_id, id])
         mycursor.execute(sql, val)
     except:
         return "db error", 500
     else:
-        return "on id: " + id + ", updated provider id to : " + request.args.get("provider_id"), 200
+        return "on truck id: " + id + ", updated provider from: " + previos_provider +  " to: " + provider_id, 200
 
 
 # update 'Rates' table in the database, from a .csv file
@@ -133,7 +173,7 @@ def postRates():
         filename = request.args.get("file")
         filename = os.path.join("..","in", filename)
         if not os.path.isfile(filename):
-            return "file does not exist inside /in directory", 404
+            return "file does not exist inside /in directory", 400
         # rates is list of lists: [['Navel', '93', 'All'], ['Blood', '112', 'All'], ['Mandarin', '104', 'All'], ...]
         rates = []
         with open (filename, "r" ) as csv_file:
