@@ -43,7 +43,7 @@ def git_api_comm():
     global STATUS_MONITOR_ARRAY
 
     if request.headers['Content-Type'] == 'application/json':
-        STATUS_MONITOR_ARRAY[2] = "working"
+        STATUS_MONITOR_ARRAY[2] = "loading"
 
         os.chdir("/gan-shmuel/")
         # TODO: docker-compose up TO PROD!
@@ -90,9 +90,9 @@ def git_api_comm():
 
         if branch != "Devops":
             os.system("echo [3]: switching to branch dir")
-            os.chdir(branch.lower()) 
+            os.chdir(branch.lower())
             os.system("echo $PWD")
-            os.system("ls -alF")           
+            os.system("ls -alF")
 
             os.system("echo [4]: settings port and volume paths")
             if branch == "Billing":
@@ -151,15 +151,29 @@ def git_api_comm():
                 os.system("docker-compose up --detach --build")
 
                 if branch == "Billing":
-                    STATUS_MONITOR_ARRAY[0] = ""
+                    STATUS_MONITOR_ARRAY[0] = "merging to staging"
                 elif branch == "Weight":
-                    STATUS_MONITOR_ARRAY[1] = ""
+                    STATUS_MONITOR_ARRAY[1] = "merging to staging"
 
-                # TODO: merge with staging
-                ''' os.system("git checkout staging")
-                os.system("git merge " + branch)
-                os.system("export VOLUME=/var/www/html/gan-shmuel/"+ branch)
+                os.chdir("..")
 
+                os.system("echo [9]: Updating DB from branches to Devops")
+                # Update Devops DB from branch
+                os.system("git checkout Devops")
+                os.system("git checkout " + branch + " -- " + branch + "/db") # git checkout Billing -- Billing/db
+                commit_str = "Updated Devops DB file: " + branch + "/db"
+                os.system("git commit -m '%s'"%commit_str)
+                os.system("git push")
+
+                os.system("echo [10]: Merging branch to staging")
+                os.system("git checkout staging")
+                os.system("git checkout " + branch + " -- " + branch)
+                merge_str = "Merging with " + branch
+                os.system("git commit -m '%s'"%merge_str)
+                os.system("git push")
+
+                # prod
+                '''
                 if branch == "Billing":
                     os.environ["PORT"] = "8082"
                     os.environ["VOLUME"] = DB_BILLING_PATH
@@ -171,23 +185,34 @@ def git_api_comm():
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY[2] = "8083"
-                    STATUS_MONITOR_ARRAY[1] = "merging for staging"
+                    STATUS_MONITOR_ARRAY[1] = "merging for staging"'''
 
-                #os.system("export VOLUME=/"+ branch)
-                #WHEN MAIN WILL CLONE CORRECTLY IT WILL WORK I HOPE.
+                if branch == "Billing":
+                    STATUS_MONITOR_ARRAY[0] = ""
+                elif branch == "Weight":
+                    STATUS_MONITOR_ARRAY[1] = ""
 
-                os.system("docker-compose --env-file ./config/.env.stg up --detach --build")'''
-                sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nThe server will be update soon")
+                sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nUploading server to staging PORT..")
             else:
                 os.system("echo [7]: test was unsuccessful! stopping test containers!!")
                 os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
                 sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
+                os.chdir("..")
         else:
-            os.system("echo [3]: Restarting CI docker-compose")
-            os.system("docker-compose up --build")
+            os.system("echo $PWD")
+            os.system("ls -alF")
+
+            os.system("echo [4]: Merging Devops to staging")
+            # TODO: merge with staging
+            os.system("git checkout staging")
+            os.system("git checkout Devops -- Devops") #  -> getting Devops dir to merge
+            merge_str = "Merging with " + branch
+            os.system("git commit -m '%s'"%merge_str)
+            os.system("git push")
+
+            #os.system("docker-compose up --build")
 
         STATUS_MONITOR_ARRAY[2] = ""
-        os.chdir("..")       
         return my_commit
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
