@@ -88,7 +88,7 @@ def git_api_comm():
         else:
             mail_list = ["eilon696@gmail.com", author]
 
-        if branch != "Devops":
+        if branch != "Devops" and branch != "staging":
             os.system("echo [3]: switching to branch dir")
             os.chdir(branch.lower())
             os.system("echo $PWD")
