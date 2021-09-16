@@ -1,0 +1,20 @@
+version: "3.3"
+services:
+  ci:
+    build:
+      context: .
+      args:
+        KEY: "${GITOKEN}"
+    ports:
+      - "8080:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ec2-user/gan-shmuel/billing:/billing
+      - /home/ec2-user/gan-shmuel/weight:/weight
+    environment:
+      - MAIL_PASSWORD='12341234!'
+      - MAIL_USERNAME='autmailer101@gmail.com'
+    restart: unless-stopped
+    labels:
+      team: devops
+      container: app
