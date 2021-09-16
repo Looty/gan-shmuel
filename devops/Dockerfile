@@ -11,9 +11,9 @@ RUN pip3 install Flask-Mail
 RUN pip3 install secure-smtplib
 # >
 RUN apk add --update openssh
-RUN mkdir .ssh
-COPY /home/ec2-user/.ssh/aws_github.pub .ssh/
-RUN ssh-add .ssh/aws_github.pub
+RUN mkdir /.ssh
+COPY /home/ec2-user/.ssh/aws_github.pub /.ssh/
+RUN ssh-add /.ssh/aws_github.pub
 # <
 #RUN git clone https://github.com/Looty/gan-shmuel.git
 RUN git clone git@github.com:Looty/gan-shmuel.git
