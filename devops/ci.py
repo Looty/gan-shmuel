@@ -157,6 +157,11 @@ def git_api_comm():
 
                 os.chdir("..")
 
+                str_github = "autmailer101@gmail.com"
+                os.system("git config --global user.email '%s'"%str_github)
+                str_github = "AWS"
+                os.system("git config --global user.name '%s'"%str_github)
+
                 os.system("echo [9]: Updating DB from branches to Devops")
                 # Update Devops DB from branch
                 os.system("git checkout Devops")
