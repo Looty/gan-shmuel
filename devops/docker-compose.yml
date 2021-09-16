@@ -4,7 +4,7 @@ services:
     build:
       context: .
       args:
-        GITOKEN: token
+        KEY: "${GITOKEN}"
     ports:
       - "8080:5000"
     volumes:
@@ -18,4 +18,3 @@ services:
     labels:
       team: devops
       container: app
-    
