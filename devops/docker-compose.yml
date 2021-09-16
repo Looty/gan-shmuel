@@ -1,9 +1,10 @@
 version: "3.3"
 services:
   ci:
-    context: .
-      args:
-        PERSONAL_TOKEN: token
+    build:
+      context: .
+        args:
+          PERSONAL_TOKEN: token
     ports:
       - "8080:5000"
     volumes:
