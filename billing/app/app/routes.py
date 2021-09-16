@@ -2,7 +2,8 @@ from flask import render_template, request, jsonify
 from pip._vendor import requests
 from app import app
 import mysql.connector, sys, json, os, datetime, random
-
+import csv
+import re
 
 # initialize connection to database 'billdb' in mysql server
 def init_db():
@@ -43,7 +44,7 @@ def postProvider():
         mycursor = conn.cursor()
         val = [request.args.get("name")]
         # check if the input name is valid
-        if not isinstance(val[0], str) or len(val)>255:
+        if not isinstance(val[0], str) or len(val[0])>255:
             return "bad type or length inserted", 400
         # check if the name already exist in the database
         sql = """SELECT * FROM Provider WHERE name=%s"""
@@ -102,6 +103,9 @@ def postTrucks():
         id = request.args.get("id")
         provider_id = request.args.get("provider_id")
         val = [id, provider_id]
+        # check if the input id and provider_id are valid
+        if not isinstance(id, str) or len(id)>10 or re.findall("\D", provider_id) or len(provider_id)>11:
+            return "bad type or length inserted", 400
         # check if the given provider id exist
         sql = """SELECT * FROM Provider WHERE id=%s"""
         mycursor.execute(sql, [provider_id])
@@ -176,21 +180,15 @@ def postRates():
             return "file: " + filename + " does not exist inside /in directory", 400
         if not filename.endswith('.csv'):
             return "please post csv files only. ", 400
-        # rates is list of lists: [['Navel', '93', 'All'], ['Blood', '112', 'All'], ['Mandarin', '104', 'All'], ...]
-        rates = []
         with open (file, "r" ) as csv_file:
-            lines = csv_file.readlines()
-            print(lines, file=sys.stderr)
-            try:
-                for line in lines[1:]:
-                    values = line[:-1].split(",")
-                    rates.append([values[0], values[1], values[2]])
-            except:
-                return "error in reading file. make sure the file is in the format: <Product (str)>, <Rate (int)>, <Scope (str)>", 400
-            sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%s, %s, %s)"""
-            mycursor.executemany(sql, rates)
+            # rates is list of lists: [['Navel', '93', 'All'], ['Blood', '112', 'All'], ['Mandarin', '104', 'All'], ...]
+            rates = list(csv.DictReader(csv_file))
+            if len(rates[0]) < 3:
+                return "error in reading file. make sure the file has at least 3 columns", 400
+        sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%(Product)s, %(Rate)s, %(Scope)s)"""
+        mycursor.executemany(sql, rates)
     except:
-        return "db error", 500
+        return "error in reading file. USAGE: ""<Product (str)>, <Rate (int)>, <Scope (str)>""", 400
     else:
         return "rates table updated successfully",200
 
