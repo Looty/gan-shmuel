@@ -9,7 +9,8 @@ RUN apk update && \
 RUN pip3 install Flask-APScheduler
 RUN pip3 install Flask-Mail
 RUN pip3 install secure-smtplib
-RUN git clone https://github.com/Looty/gan-shmuel.git
+#RUN git clone https://github.com/Looty/gan-shmuel.git
+RUN git clone git@github.com:Looty/gan-shmuel.git
 COPY . .
 EXPOSE 8080
 ENTRYPOINT ["python3" , "./ci.py"]

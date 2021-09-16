@@ -157,16 +157,17 @@ def git_api_comm():
 
                 os.chdir("..")
 
-                str_github = "autmailer101@gmail.com"
+                '''str_github = "autmailer101@gmail.com"
                 os.system("git config --global user.email '%s'"%str_github)
                 str_github = "AWS"
-                os.system("git config --global user.name '%s'"%str_github)
+                os.system("git config --global user.name '%s'"%str_github)'''
 
                 os.system("echo [9]: Updating DB from branches to Devops")
                 # Update Devops DB from branch
                 os.system("git checkout Devops")
                 os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
                 commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
+                os.system("git add .")
                 os.system("git commit -m '%s'"%commit_str)
                 os.system("git push")
 
@@ -174,6 +175,7 @@ def git_api_comm():
                 os.system("git checkout staging")
                 os.system("git checkout " + branch + " -- " + branch.lower())
                 merge_str = "Merging with " + branch.lower()
+                os.system("git add .")
                 os.system("git commit -m '%s'"%merge_str)
                 os.system("git push")
 
