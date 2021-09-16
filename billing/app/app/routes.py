@@ -1,9 +1,8 @@
 from flask import render_template, request, jsonify
 import requests
 from app import app
-import mysql.connector, sys, json, os, datetime, random
-import csv
-import re
+import mysql.connector, sys, json, os, datetime, random, csv, re
+
 
 # initialize connection to database 'billdb' in mysql server
 def init_db():
@@ -17,9 +16,9 @@ def init_db():
 
 # default page of the application
 @app.route('/')
-@app.route('/index')
-def index():
-    return render_template('index.html', title='Home')
+@app.route('/billing')
+def billing():
+    return render_template('billing.html', title='Home')
 
 
 # check if connection to the database established successfully
@@ -130,7 +129,6 @@ def postTrucks():
     else:
         return jsonify(retjson), 200
     
-# select * from Trucks, Provider where Trucks.provider_id=Provider.id and Provider.id=3;
 
 # update a truck element (id, provider_id) in the 'Trucks' table in the database
 @app.route('/truck/<id>', methods = ['PUT'])
@@ -185,14 +183,18 @@ def postRates():
             rates = list(csv.DictReader(csv_file))
             if len(rates[0]) < 3:
                 return "error in reading file. make sure the file has at least 3 columns", 400
-        sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%(Product)s, %(Rate)s, %(Scope)s)"""
-        mycursor.executemany(sql, rates)
+        try:
+            sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%(Product)s, %(Rate)s, %(Scope)s)"""
+            mycursor.executemany(sql, rates)
+        except:
+            return "error in reading file. USAGE: ""<Product (str)>, <Rate (int)>, <Scope (str)>""", 400
     except:
-        return "error in reading file. USAGE: ""<Product (str)>, <Rate (int)>, <Scope (str)>""", 400
+        return "db error", 500
     else:
         return "rates table updated successfully",200
 
 
+# get all rates from the 'Rates' table as json object
 @app.route('/rates', methods=['GET'])
 def getRates():
     try:
