@@ -171,16 +171,22 @@ def postRates():
         sql = """DELETE FROM Rates"""
         mycursor.execute(sql)
         filename = request.args.get("file")
-        filename = os.path.join("..","in", filename)
-        if not os.path.isfile(filename):
-            return "file does not exist inside /in directory", 400
+        file = os.path.join("..","in", filename)
+        if not os.path.isfile(file):
+            return "file: " + filename + " does not exist inside /in directory", 400
+        if not filename.endswith('.csv'):
+            return "please post csv files only. ", 400
         # rates is list of lists: [['Navel', '93', 'All'], ['Blood', '112', 'All'], ['Mandarin', '104', 'All'], ...]
         rates = []
-        with open (filename, "r" ) as csv_file:
+        with open (file, "r" ) as csv_file:
             lines = csv_file.readlines()
-            for line in lines[1:]:
-                values = line[:-1].split(",")
-                rates.append([values[0], values[1], values[2]])
+            print(lines, file=sys.stderr)
+            try:
+                for line in lines[1:]:
+                    values = line[:-1].split(",")
+                    rates.append([values[0], values[1], values[2]])
+            except:
+                return "error in reading file. make sure the file is in the format: <Product (str)>, <Rate (int)>, <Scope (str)>", 400
             sql = """INSERT INTO Rates (product_id, rate, scope) VALUES (%s, %s, %s)"""
             mycursor.executemany(sql, rates)
     except:
@@ -193,15 +199,14 @@ def postRates():
 def getRates():
     try:
         conn = init_db()
-        mycursor = conn.cursor()
+        mycursor = conn.cursor(dictionary=True)
         mycursor.execute("SELECT product_id,rate,scope FROM Rates")
-        headers = [col[0] for col in mycursor.description]
         rows = mycursor.fetchall()
-    except Exception as inst:
+    except:
         return "db error", 500
     else:
         # convert mysql table into dictionary and then to json response objec
-        return jsonify(list(map(lambda row: dict(zip(headers,row)) ,rows))), 200
+        return jsonify(rows), 200
 
 
 @app.route('/session/<id>', methods=['GET'])
