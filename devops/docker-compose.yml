@@ -4,7 +4,7 @@ services:
     build:
       context: .
         args:
-          PERSONAL_TOKEN: token
+          GITOKEN: token
     ports:
       - "8080:5000"
     volumes:
