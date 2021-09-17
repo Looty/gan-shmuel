@@ -4,7 +4,7 @@ import sys
 
 
 domain = "http://localhost"
-port = 8086
+port = 8082
 baseRoute = domain + ":" + str(port)
 failure_msg = "something went wrong."
 
