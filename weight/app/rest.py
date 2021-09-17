@@ -199,10 +199,11 @@ def POST_weight():
     truck_id=request.args.get('truckid')
     date = datetime.now().strftime('%Y%m%d%H%M%S')
     #pull out last direction
-    # return str(f"{direction}  {containers}   {weight}   {unit}  {force}   {product}   {truck_id}   {date}")
+    #return str(f"{direction}  {containers}   {weight}   {unit}  {force}   {product}   {truck_id}   {date}")
     cursor.execute(f"SELECT direction FROM sessions WHERE trucks_id = {truck_id} ORDER BY date desc limit 1")
     result=cursor.fetchall()
     last_direction=result[0]["direction"]
+    # return last_direction
     #neto
     cursor.execute(f'SELECT weight from containers WHERE id = "{containers}"')
     container_weight=cursor.fetchall()
@@ -221,14 +222,14 @@ def POST_weight():
     elif direction == 'none' and last_direction == 'in':
         return f"Error direction for truck {truck_id}"
     elif direction == 'in' or direction == 'none':
-        NewSession(direction, force, date, weight, truck_id, product)
+        NewSession(str(direction), bool(force), date, float(weight), int(truck_id), str(product))
     elif direction == 'out':
         #out without - Error
         if last_direction != 'in':
             return f"Error direction for truck {truck_id}"
-        cursor.execute(f'"UPDATE sessions SET neto={neto} WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1 "')
+        cursor.execute(f'UPDATE sessions SET neto={neto} WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1 ')
         #retutn session id
-        cursor.execute(f'"SELECT id FROM sessions WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1"')
+        cursor.execute(f'SELECT id FROM sessions WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1')
         result=cursor.fetchall()
         session_id=result[0]['id']
         return f'session id: {session_id}'
@@ -253,9 +254,9 @@ def POST_weight():
 def NewSession(direction, force, date, weight, truck_id, product):
     conn = mysql.connect()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute(f"SELECT id FROM products WHERE product_name={product}")
+    cursor.execute(f'SELECT id FROM products WHERE product_name="{product}" limit 1')
     product_id=cursor.fetchall()
-    product_id=product_id[0]['id']
+    product_id=int(product_id[0]['id'])
     allData=(direction, force, date, weight, truck_id, product_id)
     query = (f'INSERT into sessions (direction, f, date, bruto, trucks_id, products_id) VALUES (%s, %s, %s, %s, %s, %s)')
     cursor.execute(query , allData)
