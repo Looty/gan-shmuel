@@ -1,16 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"></script>
-<div class="ui container">
-    <h1>Status 200 : OK</h1>
-    <h2>Health check: Passed</h2>
+    <h1>health is UP!</h1>
     <div>
-        
-        <p>checking connection to db server...</p> <div class="ui active centered inline loader"></div>
-        <p>result: {{ msg }}</p> <i class="thumbs up outline icon"></i>
+        <p>checking connection to db server...</p>
+        <p>result: {{ msg }}</p>
     </div>
-</div>    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+
 {% endblock %}
