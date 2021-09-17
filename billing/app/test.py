@@ -1,12 +1,12 @@
 # this is a tessting script, meant to test all of the web routes of our project
 import mysql.connector
-import sys
 from pip._vendor import requests
+import sys
 
 
 
-domain = "http://localhost"
-port = 5000
+domain = "http://3.70.14.189"
+port = 8086
 baseRoute = domain + ":" + str(port)
 failure_msg = "something went wrong."
 
