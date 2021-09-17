@@ -43,4 +43,3 @@ INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("6666666",2);
 INSERT IGNORE INTO Provider (name) VALUES ("firstProvider");
 INSERT IGNORE INTO Provider (name) VALUES ("secondProvider");
 INSERT IGNORE INTO Provider (name) VALUES ("thirdProvider");
-
