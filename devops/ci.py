@@ -64,7 +64,7 @@ def git_api_comm():
                 branch = jsonLoad["pull_request"]["head"]["ref"]
 
                 os.system("echo [2]: checkouting to commits on main for production")
-                os.system("git checkout main")
+                os.system("git checkout -f main")
                 os.system("git pull") # -q to quiet output
 
                 os.system("echo [3]: switching to " + branch + " dir")
@@ -124,7 +124,7 @@ def git_api_comm():
                 com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
             os.system("echo [2]: checkouting to commits on relevent branch")
-            os.system("git checkout " + branch)
+            os.system("git checkout -f " + branch)
             os.system("git pull") # -q to quiet output
 
             os.system("echo $PWD")
@@ -222,7 +222,7 @@ def git_api_comm():
                     os.system("git push")'''
 
                     os.system("echo [10]: Merging branch to staging")
-                    os.system("git checkout staging")
+                    os.system("git checkout -f staging")
                     os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower())
                     merge_str = "Merging with " + branch.lower()
@@ -248,7 +248,7 @@ def git_api_comm():
 
                 os.system("echo [4]: Merging Devops to staging")
                 # TODO: merge with staging
-                os.system("git checkout staging")
+                os.system("git checkout -f staging")
                 os.system("git pull")
                 os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
                 merge_str = "Merging with " + branch.lower()
