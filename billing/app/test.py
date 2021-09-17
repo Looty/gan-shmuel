@@ -52,7 +52,7 @@ def checkRatesResponse(route):
 def checkResponse(route, method):
     print("testing " + route + "...", file=sys.stderr)
     status_code = requests.put(route).status_code if method == "PUT" else requests.get(route).status_code
-    if status_code == 500 and not status_code == 404:
+    if status_code == 500:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
 
