@@ -117,12 +117,6 @@ def git_api_comm():
 
             os.system("echo [0.5]: loading a commit from " + branch)
             os.system("echo [1]: printing json results")
-            with open("print.txt", "a+") as f:
-                f.write(str(author) + "\n")
-                f.write(str(com_msg) + "\n")
-                f.write(str(branch) + "\n")
-
-            os.system("cat print.txt")
 
             with open("logfile.log", "a") as com_log:
                 date = datetime.datetime.now()
@@ -220,7 +214,7 @@ def git_api_comm():
                     str_github = "erezmizra@gmail.com"
                     os.system("git config --global user.email '%s'"%str_github)
 
-                    os.system("echo [9]: Updating DB from branches to Devops")
+                    '''os.system("echo [9]: Updating DB from branches to Devops")
                     # Update Devops DB from branch
                     os.system("git checkout Devops")
                     os.system("git pull")
@@ -228,7 +222,7 @@ def git_api_comm():
                     commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
                     os.system("git add .")
                     os.system("git commit -m '%s'"%commit_str)
-                    os.system("git push")
+                    os.system("git push")'''
 
                     os.system("echo [10]: Merging branch to staging")
                     os.system("git checkout staging")
