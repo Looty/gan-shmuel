@@ -17,3 +17,5 @@
 [17/09/2021 14:23:27] made by erezmizra@gmail.com on branch Weight with commit message: removed db health check: high CPU EC2??
 [17/09/2021 15:09:49] made by erezmizra@gmail.com on branch staging with commit message: Merging with weight
 [17/09/2021 15:12:02] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument
+[17/09/2021 15:13:00] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
+[17/09/2021 16:07:53] made by erezmizra@gmail.com on branch Weight with commit message: removed extra tab on wdata:
