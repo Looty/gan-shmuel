@@ -25,4 +25,4 @@ services:
       team: weight
       container: db 
 volumes:
-    wdata: 
+  wdata: 
