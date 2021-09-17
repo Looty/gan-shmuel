@@ -13,6 +13,7 @@ def main():
     # test simple GET functions
     checkResponse(baseRoute + "/health", "GET")
     checkResponse(baseRoute + "/billing", "GET")
+    checkResponse(baseRoute + "/index", "GET")
     # test provider functions
     ret = checkPostResponse(baseRoute + "/provider?name=test1")
     provider_id1 =  str(ret["id"])
@@ -51,7 +52,7 @@ def checkRatesResponse(route):
 def checkResponse(route, method):
     print("testing " + route + "...", file=sys.stderr)
     status_code = requests.put(route).status_code if method == "PUT" else requests.get(route).status_code
-    if status_code == 500 or status_code == 404:
+    if status_code == 500 and not status_code == 404:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
 
