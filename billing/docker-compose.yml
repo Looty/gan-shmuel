@@ -11,14 +11,14 @@ services:
       container: app
     depends_on:
       - bdb
-
   bdb:
     image: mysql:8.0
     ports:
       - "3306"
     volumes:
-      - data:/var/lib/mysql
-      - ${VOLUME}:/docker-entrypoint-initdb.d/billingdb.sql
+      - data:/var/lib/mysql/:rw
+      - ${VOLUME}:/docker-entrypoint-initdb.d/
+      - ${TEAM_PATH}:/billing
     environment:
       - "MYSQL_DATABASE=billdb"
       - "MYSQL_ROOT_PASSWORD=root"
@@ -27,6 +27,5 @@ services:
     labels:
       team: billing
       container: db
-
 volumes:
   data:
