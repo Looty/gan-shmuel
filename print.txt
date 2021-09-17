@@ -49,3 +49,9 @@ staging
 erezmizra@gmail.com
 removed db health check: high CPU EC2??
 Weight
+erezmizra@gmail.com
+Merging with weight
+staging
+oronboy100@gmail.com
+updated config files with VOLUME argument
+Billing
