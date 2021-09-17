@@ -31,3 +31,5 @@
 [17/09/2021 17:15:40] made by htemstet@gmail.com on branch Weight with commit message: updated structure of compose and .env file and test from ci team
 [17/09/2021 17:15:53] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: weight/db
 [17/09/2021 17:17:02] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument
+[17/09/2021 17:17:49] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
+[17/09/2021 17:45:19] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument
