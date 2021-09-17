@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 import requests
 from app import app
 import mysql.connector, sys, json, os, datetime, random, csv, re
-import traceback
+
 
 # initialize connection to database 'billdb' in mysql server
 def init_db():
@@ -49,7 +49,7 @@ def postProvider():
         sql = """SELECT * FROM Provider WHERE name=%s"""
         mycursor.execute(sql, val)
         if mycursor.fetchone():
-            return "name already exist", 422
+            return "name already exist", 400
         # execute: insert 'name' into 'Provider' table (id created automatically)
         sql = """INSERT INTO Provider (name) VALUES (%s)"""
         mycursor.execute(sql, val)
@@ -116,7 +116,7 @@ def postTrucks():
         mycursor.execute(sql, [id])
         truck_res = mycursor.fetchone()
         if truck_res:
-            return "truck license plate: " + id + " already exist", 422
+            return "truck license plate: " + id + " already exist", 200
         # execute: insert 'id' and 'provider_id' into 'Trucks' table
         sql = """INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)"""
         mycursor.execute(sql, val)
@@ -175,7 +175,7 @@ def postRates():
         filename = request.args.get("file")
         file = os.path.join("..","in", filename)
         if not os.path.isfile(file):
-            return "file: " + filename + " does not exist inside /in directory", 404
+            return "file: " + filename + " does not exist inside /in directory", 400
         if not filename.endswith('.csv'):
             return "please post csv files only. ", 400
         with open (file, "r" ) as csv_file:
@@ -202,70 +202,54 @@ def getRates():
         mycursor = conn.cursor(dictionary=True)
         mycursor.execute("SELECT product_id,rate,scope FROM Rates")
         rows = mycursor.fetchall()
-        if not rows:
-            return "Rates table is empty!", 400
-    except Exception as inst:
+    except:
         return "db error", 500
     else:
         # convert mysql table into dictionary and then to json response objec
         return jsonify(rows), 200
 
 
-
-session_cache = dict() # global session_cache
-truck_list = ("1111111","2222222","3333333","4444444","5555555","6666666")
 @app.route('/session/<id>', methods=['GET'])
 def getSession(id):
-    if len(session_cache) == 0:
-        createSessions()
-    
-    if int(id) in session_cache:
-        return jsonify(session_cache[int(id)]), 200
-    return "session not found", 404
-    
-def createSessions():
-    for i in range(len(truck_list)):
-        for j in range(5):
-            id = i*5+j+1
-            product_list = ["Mandarin", "Blood", "Grapefruit","Navel","Shamuti"]
-            session =  { "id": id, 
-                "truck": random.choice(truck_list),
-                "bruto": random.randint(30, 70),
-                "product": random.choice(product_list),
+    truc_list = ["101", "102", "105", "101", "105"]
+    retjson =  { "id": id, 
+                "truck": random.choice(truc_list),
+                "bruto": 47,
+                "Mandarin": 20,
                 "neto": random.randint(10, 50)
-            }
-            session_cache[id] = session
+                }
+    return jsonify(retjson), 200
 
 
-truck_session_cache = dict() #global truck_
 @app.route('/item/<license_id>', methods=['GET'])
 def getItem(license_id):
-    if license_id in truck_session_cache:
-        return jsonify(truck_session_cache[license_id]), 200
-    
     sess_list =[]
-    company_num_list = [234, 753,634,125,634,243,100]
-    if not license_id in truck_list:
-        return "truck not found", 404
-
-    if len(session_cache) == 0:
-        createSessions() # init dummy sessions, happens only once
-
-    ###  session_cache.items() -> creates a list of tuples, each tuple gets session id and session
-    ### lambda item: item[1]["truck"] == license_id -> [1] to take the session and not the key,finds the sessions with "truck":license_id
-    ### map takes all the sessions from the tuples
-    sess_list = list(map(lambda item: item[1],filter(lambda item: item[1]["truck"] == license_id, session_cache.items())))
+    for i in range(3):
+        sess = getSession(1)[0]
+        dict_data = json.loads(sess.data.decode('utf-8'))
+        sess_list.append(dict_data)
     retjson = { "id": license_id,
-        "comapny": random.choice(company_num_list),
-        "sessions": list(map(lambda s: s["id"], sess_list))
-    }
-    truck_session_cache[license_id] = retjson
+                "hody5": 1,
+                "sessions": sess_list
+            }
     return jsonify(retjson), 200
 
 
 @app.route('/truck/<license_id>', methods=['GET'])
 def getTruck(license_id):
-    return getItem(license_id)
+    try:
+        conn = init_db()
+        mycursor = conn.cursor()
+        # check if the license id of the truck exsist in the database
+        mycursor.execute("""SELECT * FROM Trucks WHERE id=%s""" % (license_id))
+        if not mycursor.fetchone():
+            return "not exist.", 404
+        response = requests.get("http://localhost:5000/item/" + license_id)
+        ret = response.json()
+    except:
+        return "something is wrong.", 500
+    else:
+        return jsonify(ret), 200
 
 
 @app.route('/bill/<id>', methods=['GET'])
@@ -279,60 +263,87 @@ def getBill(id):
         # get the provider_name from the 'Provider' table
         mycursor.execute("""SELECT name FROM Provider WHERE id=%s""" % (id))
         provider_name = mycursor.fetchone() # tuple (5,)
-        if not provider_name:
-            return "provider not exist", 404
-        
         mycursor.execute("""SELECT id FROM Trucks WHERE provider_id=%s""" % (id))
-        licenses_set = list(sum(mycursor.fetchall(), ()))
+        licenses_set = list(sum(mycursor.fetchall(), ())) # from tuple: [("101",),  ("105",), ....] to list []
+        print(licenses_set,file=sys.stderr)
         sessions_list = []
         for license in licenses_set:
-            items = getItem(license)[0]
-            dict_data = items.json
+            items = getTruck(license)[0]
+            dict_data = json.loads(items.data.decode('utf-8'))
             sessions_list.extend(dict_data["sessions"])
         sessions_count = len(sessions_list)
         truck_list = []
-        product_data = dict()
-        
         for sess in sessions_list:
-            sess_data = getSession(sess)[0].json #takes the data from current session
-            truck_list.append(sess_data["truck"]) # adds the truck to a list, that will be "set" later for unique values
-            
-            if not sess_data["product"] in product_data:
-                product_data[sess_data["product"]] = {
-                                        "product":sess_data["product"],
-                                        "count":1,
-                                        "amount":sess_data["neto"]
-                                    }
-            else:
-                product_information = product_data[sess_data["product"]]
-                product_information["count"]+=1
-                product_information["amount"]+=sess_data["neto"]
-                                        
-        total = 0
-        for product_id in product_data:
-            mycursor.execute("""SELECT rate FROM Rates WHERE product_id=%s
-                             and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1""",(product_id,id))
-            ## WHERE product_id=%s and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1
-            ## -> try to find All the provider id, orders the results as "All"s are last, so provider id's will be found first
-            product_rate = mycursor.fetchone()[0]
-            product_data[product_id]["rate"] = product_rate
-            product_data[product_id]["pay"] = product_rate* product_information["amount"]
-            total+=product_data[product_id]["pay"]
+            truck_list.append(sess["truck"])
+        truck_count = len(set(truck_list))
+        print("****************",file=sys.stderr)
+        print(sessions_list,file=sys.stderr)
+        print(truck_list,file=sys.stderr)
         
-        
-        truck_count = len(set(truck_list)) 
+        # create a dictionary to be return
         ret_dict = {
             'id': id,
-            'name': provider_name[0],
+            'name': provider_name,
             'from': t1,
             'to': t2,
             'truckCount': truck_count,
             'sessionCount': sessions_count,
-            'products': list(product_data.values()),
-            'total': total
+            'products': [{
+                'product': 'orange',
+                'count': '5',
+                'amount': 100,
+                'rate': 20,
+                'pay': 2000
+                }],
+            'total': 50
         }
+        print(ret_dict,file=sys.stderr)
+        mycursor.execute("SELECT * FROM Trucks")
+        res = mycursor.fetchall()
     except Exception as inst:
-        traceback.print_exc()
+        print(type(inst),file=sys.stderr)
+        print(inst.args,file=sys.stderr)
         return "db error", 500
     else:
-        return jsonify(ret_dict), 200
+        return str(res), 200
+
+# trucks table: id, provider_id
+# set_of_trucks_for_id = (...)
+# for loop: getTruck(license_id) for each one in set_of_trucks_for_id from t1 to t2
+# insert each session from getTruck(license_id)[sessions] into sessions_list
+# sessions_list = [...]
+# truck_id_list =[...]
+# truckCount = len(set(truck_id_list))
+
+# {
+#   "id": <str>,
+#   "name": <str>,
+#   "from": <str>,
+#   "to": <str>,
+#   "truckCount": <int>,
+#   "sessionCount": <int>,
+#   "products": [
+#     { "product":<str>,   product_id from Rates table
+#       "count": <str>, // number of sessions
+#       "amount": <int>, // total kg
+#       "rate": <int>, // agorot
+#       "pay": <int> // agorot
+#     },...
+#   ],
+#   "total": <int> // agorot
+# }
+
+        # get a single session from /session/<id>
+        # session = getSession(id)
+        # get the weights from the session
+        # weight = json.loads(session[0].replace("'", "\"").replace("\n", ""))["neto"]
+
+
+
+# if conn.is_connected():
+#         cursor = conn.cursor()
+#         cursor.execute("CREATE DATABASE employee")
+
+
+# print(type(inst),file=sys.stderr)    # the exception instance
+# print(inst.args,file=sys.stderr)     # arguments stored in .args
