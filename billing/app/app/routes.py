@@ -173,7 +173,8 @@ def postRates():
         sql = """DELETE FROM Rates"""
         mycursor.execute(sql)
         filename = request.args.get("file")
-        file = os.path.join("..","in", filename)
+        file = os.path.join(".","in", filename)
+        #file = os.path.join("..","in", filename)
         if not os.path.isfile(file):
             return "file: " + filename + " does not exist inside /in directory", 404
         if not filename.endswith('.csv'):
