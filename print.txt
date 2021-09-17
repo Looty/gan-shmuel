@@ -4,3 +4,9 @@ Billing
 hodaya060@gmail.com
 fix test.py
 Billing
+erezmizra@gmail.com
+Updated Devops DB file: billing/db
+staging
+hodaya060@gmail.com
+fix test.py
+Billing
