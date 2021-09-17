@@ -112,3 +112,9 @@ Weight
 oronboy100@gmail.com
 updated config files with VOLUME argument
 Billing
+erezmizra@gmail.com
+Updated Devops DB file: billing/db
+staging
+erezmizra@gmail.com
+removed requests, added it from pip.vendor
+Billing
