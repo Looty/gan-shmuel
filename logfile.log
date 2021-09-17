@@ -19,3 +19,5 @@
 [17/09/2021 15:12:02] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument
 [17/09/2021 15:13:00] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
 [17/09/2021 16:07:53] made by erezmizra@gmail.com on branch Weight with commit message: removed extra tab on wdata:
+[17/09/2021 16:08:23] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: weight/db
+[17/09/2021 16:20:09] made by htemstet@gmail.com on branch Weight with commit message: updated structure of compose and .env file and test from ci team
