@@ -1,20 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
     <head>
-      {% if title %}
-      <title>{{ title }} - Billing</title>
-      {% else %}
-      <title>Welcome to Billing's department</title>
-      {% endif %}
+        <meta charset="utf-8">
+        <title>Welcome to Billing's department</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"></script>
+
     </head>
     <body>
-        <div>
-            navigation:
-            <a href="/index">Home</a>
-            <a href="/health">health</a>
-            <a href="/provider">provider</a>
+        <div class="ui container">
+            <h1 class="ui massive header">Welcome to Billing department</h1>
+
+            <hr>
+        
+            
+        
+                <h2 class="ui small header">Navigation:</h2> <i class="large angle double right icon"></i>
+                
+                <button class="ui black inverted button"><a href="/index">Home</a></button>
+                <button class="ui black inverted button"><a href="/health">Health</a></button>
+                <button class="ui black inverted button"><a href="/provider">Provider</a></button> 
+                <button class="ui black inverted button"><a href="/rates">Rates</a></button> 
+                <button class="ui black inverted button"><a href="/truck">Truck</a></button> 
+                <button class="ui black inverted button"><a href="/bill">Bill</a></button> 
+        
+                <hr>
         </div>
-        <hr>
         {% block content %}{% endblock %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
     </body>
+
 </html>

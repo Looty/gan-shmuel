@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>provider is UP!</h1>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"></script>
+
+<div class="ui container">
+    <h1>Creat a provider name</h1>
     <div>
-        <form action = "http://localhost:5000/provider" method = "post">
-            <p>insert a provider id or search for available one automatically.</p>
+        <form  method = "POST">
+         
             <p>Provider name: <input type="text" name="name"/></p>
             <p><input type="submit" value="submit" /></p>
-            <p>result: {{ msg }}</p>
+            
+            
         </form>
     </div>
-
+</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
 {% endblock %}
