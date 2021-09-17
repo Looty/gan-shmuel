@@ -316,6 +316,9 @@ def getBill(id):
             ## WHERE product_id=%s and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1
             ## -> try to find All the provider id, orders the results as "All"s are last, so provider id's will be found first
             product_rate = mycursor.fetchone()[0]
+            if not product_rate:
+                return "no rates table in use!", 400
+                
             product_data[product_id]["rate"] = product_rate
             product_data[product_id]["pay"] = product_rate* product_information["amount"]
             total+=product_data[product_id]["pay"]
