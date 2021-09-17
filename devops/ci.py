@@ -52,172 +52,214 @@ def git_api_comm():
         jsonDump = json.dumps(my_commit)
         jsonLoad = json.loads(jsonDump)
 
-        branch_ref = jsonLoad["ref"]
-        directory_ref = jsonLoad["commits"][-1]
-        com_msg = directory_ref["message"]
-        author = directory_ref["author"]['email']
-        branch = branch_ref.split("/")[2]
+        commit_json = jsonLoad.get("ref", "")
+        pull_request_json = jsonLoad.get("action", "")
 
-        os.system("echo [1]: printing json results")
-        with open("print.txt", "a+") as f:
-            f.write(str(author) + "\n")
-            f.write(str(com_msg) + "\n")
-            f.write(str(branch) + "\n")
+        if pull_request_json:
+            if pull_request_json == "opened":
+                os.system("echo [0.5]: a pull request just opened")
+            elif pull_request_json == "closed":
+                # LOAD TO PRODUCTION
+                os.system("echo [0.5]: a pull request just resolved - lets upload something to production!")
+                branch = jsonLoad["pull_request"]["head"]["ref"]
 
-        os.system("cat print.txt")
+                os.system("echo [2]: checkouting to commits on main for production")
+                os.system("git checkout main")
+                os.system("git pull") # -q to quiet output
 
-        with open("logfile.log", "a") as com_log:
-            date = datetime.datetime.now()
-            dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
-            com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
-
-        os.system("echo [2]: checkouting to commits on relevent branch")
-        os.system("git checkout " + branch)
-        os.system("git pull") # -q to quiet output
-
-        os.system("echo $PWD")
-        os.system("ls -alF")
-
-        mail_list = ""
-        if (branch == "Devops"):
-            mail_list = ["eilon696@gmail.com", author]
-        elif (branch == "Billing"):
-            mail_list = ["oronboy100@gmail.com", author]
-        elif (branch == "Weight"):
-            mail_list = ["ron981@gmail.com", author]
-        else:
-            mail_list = ["eilon696@gmail.com", author]
-
-        if branch != "Devops" and branch != "staging":
-            os.system("echo [3]: switching to branch dir")
-            os.chdir(branch.lower())
-            os.system("echo $PWD")
-            os.system("ls -alF")
-
-            os.system("echo [4]: settings port and volume paths")
-            if branch == "Billing":
-                os.environ["PORT"] = "8086"
-                os.environ["VOLUME"] = DB_BILLING_PATH
-                os.environ["TEAM_PATH"] = BILLING_PATH
-                BILLING_MONITOR_ARRAY[0] = "8086"
-                STATUS_MONITOR_ARRAY[0] = "testing"
-                
-            elif branch == "Weight":
-                os.environ["PORT"] = "8085"
-                os.environ["VOLUME"] = DB_WEIGHT_PATH
-                os.environ["TEAM_PATH"] = WEIGHT_PATH
-                WEIGHT_MONITOR_ARRAY[0] = "8085"
-                STATUS_MONITOR_ARRAY[1] = "testing"
-
-            os.system("echo " + os.environ["PORT"])
-            os.system("echo " + os.environ["TEAM_PATH"])
-            os.system("echo " + os.environ["VOLUME"])        
-
-            os.system("echo [5]: docker-compose up for test")
-            os.system("docker-compose up --detach --build")
-            os.system("echo [5.5]: exec to test container and loading test")
-            os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
-            os.system("echo $PWD")
-            os.system("ls -alF")
-            os.system('python3 app/test.py')
-            test_result = os.system('echo $?')
-
-            os.system("echo [6]: stopping tests containers")
-
-            if test_result == 0: # OK
-                os.system("echo [7]: test was successful! stopping test containers & settings port & volume paths")
-                os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
+                os.system("echo [3]: switching to " + branch + " dir")
+                os.chdir(branch.lower())
+                os.system("echo $PWD")
+                os.system("ls -alF")
 
                 if branch == "Billing":
-                    os.environ["PORT"] = "8082"
-                    os.environ["VOLUME"] = DB_BILLING_PATH
-                    os.environ["TEAM_PATH"] = BILLING_PATH
-                    BILLING_MONITOR_ARRAY[0] = ""
-                    BILLING_MONITOR_ARRAY[1] = "8082"
-                    STATUS_MONITOR_ARRAY[0] = "exiting test"
-                elif branch == "Weight":
-                    os.environ["PORT"] = "8084"
-                    os.environ["VOLUME"] = DB_WEIGHT_PATH
-                    os.environ["TEAM_PATH"] = WEIGHT_PATH
-                    WEIGHT_MONITOR_ARRAY[0] = ""
-                    WEIGHT_MONITOR_ARRAY[1] = "8084"
-                    STATUS_MONITOR_ARRAY[1] = "exiting test"
-
-                os.system("echo " + os.environ["PORT"])
-                os.system("echo " + os.environ["TEAM_PATH"])
-                os.system("echo " + os.environ["VOLUME"])
-                
-                os.system("echo [8]: docker-compose for staging [READY FOR STAGING]")
-                os.system("docker-compose up --detach --build")
-
-                if branch == "Billing":
-                    STATUS_MONITOR_ARRAY[0] = "merging to staging"
-                elif branch == "Weight":
-                    STATUS_MONITOR_ARRAY[1] = "merging to staging"
-
-                os.chdir("..")
-
-                str_github = "Erez"
-                os.system("git config --global user.name '%s'"%str_github)
-                str_github = "erezmizra@gmail.com"
-                os.system("git config --global user.email '%s'"%str_github)
-
-                os.system("echo [9]: Updating DB from branches to Devops")
-                # Update Devops DB from branch
-                os.system("git checkout Devops")
-                os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
-                commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
-                os.system("git add .")
-                os.system("git commit -m '%s'"%commit_str)
-                os.system("git push")
-
-                os.system("echo [10]: Merging branch to staging")
-                os.system("git checkout staging")
-                os.system("git checkout " + branch + " -- " + branch.lower())
-                merge_str = "Merging with " + branch.lower()
-                os.system("git add .")
-                os.system("git commit -m '%s'"%merge_str)
-                os.system("git push")
-
-                # prod
-                '''
-                if branch == "Billing":
-                    os.environ["PORT"] = "8082"
+                    os.environ["PORT"] = "8081"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
                     BILLING_MONITOR_ARRAY[2] = "8081"
-                    STATUS_MONITOR_ARRAY[0] = "merging for staging"
+                    STATUS_MONITOR_ARRAY[0] = "uploading to production"
                 elif branch == "Weight":
                     os.environ["PORT"] = "8083"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY[2] = "8083"
-                    STATUS_MONITOR_ARRAY[1] = "merging for staging"'''
+                    STATUS_MONITOR_ARRAY[1] = "uploading to production"
+
+                os.system("echo " + os.environ["PORT"])
+                os.system("echo " + os.environ["TEAM_PATH"])
+                os.system("echo " + os.environ["VOLUME"])
+                
+                os.system("echo [4]: docker-compose for production [READY FOR PRODUCTION]")
+                os.system("docker-compose up --detach --build")
 
                 if branch == "Billing":
                     STATUS_MONITOR_ARRAY[0] = ""
                 elif branch == "Weight":
                     STATUS_MONITOR_ARRAY[1] = ""
 
-                sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nUploading server to staging PORT..")
-            else:
-                os.system("echo [7]: test was unsuccessful! stopping test containers!!")
-                os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
-                sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
                 os.chdir("..")
-        else:
+
+                mail_list = ""
+                if (branch == "Devops"):
+                    mail_list = ["eilon696@gmail.com"]
+                elif (branch == "Billing"):
+                    mail_list = ["oronboy100@gmail.com"]
+                elif (branch == "Weight"):
+                    mail_list = ["ron981@gmail.com"]
+                else:
+                    mail_list = ["eilon696@gmail.com"]
+                sendmail(mail_list, branch + " was uploaded to production!", "Uploading server to production PORT..")
+        elif commit_json:
+            directory_ref = jsonLoad["commits"][-1]
+            com_msg = directory_ref["message"]
+            author = directory_ref["author"]['email']
+            branch = commit_json.split("/")[2]
+
+            os.system("echo [0.5]: loading a commit from " + branch)
+            os.system("echo [1]: printing json results")
+            with open("print.txt", "a+") as f:
+                f.write(str(author) + "\n")
+                f.write(str(com_msg) + "\n")
+                f.write(str(branch) + "\n")
+
+            os.system("cat print.txt")
+
+            with open("logfile.log", "a") as com_log:
+                date = datetime.datetime.now()
+                dt_string = date.strftime("%d/%m/%Y %H:%M:%S")
+                com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
+
+            os.system("echo [2]: checkouting to commits on relevent branch")
+            os.system("git checkout " + branch)
+            os.system("git pull") # -q to quiet output
+
             os.system("echo $PWD")
             os.system("ls -alF")
 
-            os.system("echo [4]: Merging Devops to staging")
-            # TODO: merge with staging
-            os.system("git checkout staging")
-            os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
-            merge_str = "Merging with " + branch.lower()
-            os.system("git commit -m '%s'"%merge_str)
-            os.system("git push")
+            mail_list = ""
+            if (branch == "Devops"):
+                mail_list = ["eilon696@gmail.com", author]
+            elif (branch == "Billing"):
+                mail_list = ["oronboy100@gmail.com", author]
+            elif (branch == "Weight"):
+                mail_list = ["ron981@gmail.com", author]
+            else:
+                mail_list = ["eilon696@gmail.com", author]
 
-            #os.system("docker-compose up --build")
+            if branch not in ("Devops", "staging", "main"): # OK is Billing/Weight
+                os.system("echo [3]: switching to branch dir")
+                os.chdir(branch.lower())
+                os.system("echo $PWD")
+                os.system("ls -alF")
+
+                os.system("echo [4]: settings port and volume paths")
+                if branch == "Billing":
+                    os.environ["PORT"] = "8086"
+                    os.environ["VOLUME"] = DB_BILLING_PATH
+                    os.environ["TEAM_PATH"] = BILLING_PATH
+                    BILLING_MONITOR_ARRAY[0] = "8086"
+                    STATUS_MONITOR_ARRAY[0] = "testing"
+                    
+                elif branch == "Weight":
+                    os.environ["PORT"] = "8085"
+                    os.environ["VOLUME"] = DB_WEIGHT_PATH
+                    os.environ["TEAM_PATH"] = WEIGHT_PATH
+                    WEIGHT_MONITOR_ARRAY[0] = "8085"
+                    STATUS_MONITOR_ARRAY[1] = "testing"
+
+                os.system("echo " + os.environ["PORT"])
+                os.system("echo " + os.environ["TEAM_PATH"])
+                os.system("echo " + os.environ["VOLUME"])        
+
+                os.system("echo [5]: docker-compose up for test")
+                os.system("docker-compose up --detach --build")
+                os.system("echo [5.5]: exec to test container and loading test")
+                os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
+                os.system("echo $PWD")
+                os.system("ls -alF")
+                os.system('python3 app/test.py')
+                test_result = os.system('echo $?')
+
+                os.system("echo [6]: stopping tests containers")
+
+                if test_result == 0: # OK
+                    os.system("echo [7]: test was successful! stopping test containers & settings port & volume paths")
+                    os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
+
+                    if branch == "Billing":
+                        os.environ["PORT"] = "8082"
+                        os.environ["VOLUME"] = DB_BILLING_PATH
+                        os.environ["TEAM_PATH"] = BILLING_PATH
+                        BILLING_MONITOR_ARRAY[0] = ""
+                        BILLING_MONITOR_ARRAY[1] = "8082"
+                        STATUS_MONITOR_ARRAY[0] = "exiting test"
+                    elif branch == "Weight":
+                        os.environ["PORT"] = "8084"
+                        os.environ["VOLUME"] = DB_WEIGHT_PATH
+                        os.environ["TEAM_PATH"] = WEIGHT_PATH
+                        WEIGHT_MONITOR_ARRAY[0] = ""
+                        WEIGHT_MONITOR_ARRAY[1] = "8084"
+                        STATUS_MONITOR_ARRAY[1] = "exiting test"
+
+                    os.system("echo " + os.environ["PORT"])
+                    os.system("echo " + os.environ["TEAM_PATH"])
+                    os.system("echo " + os.environ["VOLUME"])
+                    
+                    os.system("echo [8]: docker-compose for staging [READY FOR STAGING]")
+                    os.system("docker-compose up --detach --build")
+
+                    if branch == "Billing":
+                        STATUS_MONITOR_ARRAY[0] = "merging to staging"
+                    elif branch == "Weight":
+                        STATUS_MONITOR_ARRAY[1] = "merging to staging"
+
+                    os.chdir("..")
+
+                    str_github = "Erez"
+                    os.system("git config --global user.name '%s'"%str_github)
+                    str_github = "erezmizra@gmail.com"
+                    os.system("git config --global user.email '%s'"%str_github)
+
+                    os.system("echo [9]: Updating DB from branches to Devops")
+                    # Update Devops DB from branch
+                    os.system("git checkout Devops")
+                    os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
+                    commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
+                    os.system("git add .")
+                    os.system("git commit -m '%s'"%commit_str)
+                    os.system("git push")
+
+                    os.system("echo [10]: Merging branch to staging")
+                    os.system("git checkout staging")
+                    os.system("git checkout " + branch + " -- " + branch.lower())
+                    merge_str = "Merging with " + branch.lower()
+                    os.system("git add .")
+                    os.system("git commit -m '%s'"%merge_str)
+                    os.system("git push")
+
+                    if branch == "Billing":
+                        STATUS_MONITOR_ARRAY[0] = ""
+                    elif branch == "Weight":
+                        STATUS_MONITOR_ARRAY[1] = ""
+
+                    sendmail(mail_list, "Test on branch" + branch + " was successful!", "Test result: " + str(test_result) + " (0 is OK)\nUploading server to staging PORT..")
+                else:
+                    os.system("echo [7]: test was unsuccessful! stopping test containers!!")
+                    os.system("docker stop $(docker container ps --filter label=team=" + branch.lower() + " --format '{{.ID}}')")
+                    sendmail(mail_list,"Test on branch" + branch + " failed!", "Test result: " + str(test_result) + "\ncheck your code again")
+                    os.chdir("..")
+            else:
+                # A NEW CI WAS PULLED
+                os.system("echo $PWD")
+                os.system("ls -alF")
+
+                os.system("echo [4]: Merging Devops to staging")
+                # TODO: merge with staging
+                os.system("git checkout staging")
+                os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
+                merge_str = "Merging with " + branch.lower()
+                os.system("git commit -m '%s'"%merge_str)
+                os.system("git push")
 
         STATUS_MONITOR_ARRAY[2] = ""
         return my_commit
