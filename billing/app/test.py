@@ -45,8 +45,6 @@ def checkPostResponse(route):
     if status_code == 500:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
-    elif status_code == 422:
-        return None
     else:
         json_dict = response.json()                 # print: {'id': 8}
     return json_dict
