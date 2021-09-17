@@ -13,7 +13,6 @@ def main():
     # test simple GET functions
     checkResponse(baseRoute + "/health", "GET")
     checkResponse(baseRoute + "/billing", "GET")
-    checkResponse(baseRoute + "/index", "GET")
     # test provider functions
     ret = checkPostResponse(baseRoute + "/provider?name=test1")
     provider_id1 =  str(ret["id"])
