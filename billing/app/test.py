@@ -35,6 +35,7 @@ def main():
     checkResponse(baseRoute + "/rates", "GET")
     # delete all changes from 'Provider' and 'Trucks' tables
     undoChanges(provider_id1, provider_id2, truck_id1, truck_id2)
+    print("test passed!", file=sys.stderr)
     sys.exit(0)
 
 
@@ -45,8 +46,6 @@ def checkPostResponse(route):
     if status_code == 500:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
-    elif status_code == 422:
-        return None
     else:
         json_dict = response.json()                 # print: {'id': 8}
     return json_dict
