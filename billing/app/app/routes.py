@@ -49,7 +49,7 @@ def postProvider():
         sql = """SELECT * FROM Provider WHERE name=%s"""
         mycursor.execute(sql, val)
         if mycursor.fetchone():
-            return "name already exist", 400
+            return "name already exist", 422
         # execute: insert 'name' into 'Provider' table (id created automatically)
         sql = """INSERT INTO Provider (name) VALUES (%s)"""
         mycursor.execute(sql, val)
@@ -116,7 +116,7 @@ def postTrucks():
         mycursor.execute(sql, [id])
         truck_res = mycursor.fetchone()
         if truck_res:
-            return "truck license plate: " + id + " already exist", 200
+            return "truck license plate: " + id + " already exist", 422
         # execute: insert 'id' and 'provider_id' into 'Trucks' table
         sql = """INSERT INTO Trucks (id, provider_id) VALUES (%s, %s)"""
         mycursor.execute(sql, val)
@@ -175,7 +175,7 @@ def postRates():
         filename = request.args.get("file")
         file = os.path.join("..","in", filename)
         if not os.path.isfile(file):
-            return "file: " + filename + " does not exist inside /in directory", 400
+            return "file: " + filename + " does not exist inside /in directory", 404
         if not filename.endswith('.csv'):
             return "please post csv files only. ", 400
         with open (file, "r" ) as csv_file:
