@@ -311,13 +311,14 @@ def getBill(id):
                                         
         total = 0
         for product_id in product_data:
-            mycursor.execute("""SELECT rate FROM Rates WHERE product_id=%s
-                             and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1""",(product_id,id))
+            try:    
+                mycursor.execute("""SELECT rate FROM Rates WHERE product_id=%s
+                                and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1""",(product_id,id))
             ## WHERE product_id=%s and (scope=%s OR scope = 'All') order by scope='All' LIMIT 1
             ## -> try to find All the provider id, orders the results as "All"s are last, so provider id's will be found first
-            product_rate = mycursor.fetchone()[0]
-            if not product_rate:
-                return "no rates table in use!", 400
+                product_rate = mycursor.fetchone()[0]
+            except Exception as inst:
+                return "no rate table in use!", 400  
                 
             product_data[product_id]["rate"] = product_rate
             product_data[product_id]["pay"] = product_rate* product_information["amount"]
