@@ -37,10 +37,11 @@ def checkPostResponse(route):
     print("testing " + route + "...", file=sys.stderr)
     response = requests.post(url=route)
     status_code = response.status_code
-    json_dict = response.json()                 # print: {'id': 8}
     if status_code == 500:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
+    else:
+        json_dict = response.json()                 # print: {'id': 8}
     return json_dict
 
 def checkRatesResponse(route):
@@ -52,6 +53,7 @@ def checkRatesResponse(route):
 def checkResponse(route, method):
     print("testing " + route + "...", file=sys.stderr)
     status_code = requests.put(route).status_code if method == "PUT" else requests.get(route).status_code
+    print("code: " + str(status_code), file=sys.stderr)
     if status_code == 500:
         print(failure_msg, file=sys.stderr)
         sys.exit(1)
