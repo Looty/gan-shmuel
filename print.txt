@@ -28,3 +28,12 @@ staging
 htemstet@gmail.com
 updated structure of compose and .env file and test from ci team
 Weight
+erezmizra@gmail.com
+Updated Devops DB file: weight/db
+staging
+erezmizra@gmail.com
+Merging with weight
+staging
+htemstet@gmail.com
+updated structure of compose and .env file and test from ci team
+Weight
