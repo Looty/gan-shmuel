@@ -168,7 +168,7 @@ def git_api_comm():
                 os.system("echo [5]: docker-compose up for test")
                 os.system("docker-compose up --detach --build")
                 os.system("echo [5.5]: exec to test container and loading test")
-                os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
+                os.system('docker exec -it $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
                 os.system("echo $PWD")
                 os.system("ls -alF")
                 os.system('python3 app/test.py')
