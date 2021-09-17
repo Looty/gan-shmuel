@@ -1,5 +1,6 @@
 # this is a tessting script, meant to test all of the web routes of our project
-import requests, mysql.connector
+import mysql.connector
+from pip._vendor import requests
 import sys
 
 
