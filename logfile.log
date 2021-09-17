@@ -13,3 +13,5 @@
 [17/09/2021 14:15:56] made by htemstet@gmail.com on branch Weight with commit message: updated structure of compose and .env file and test from ci team
 [17/09/2021 14:16:36] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: weight/db
 [17/09/2021 14:18:03] made by htemstet@gmail.com on branch Weight with commit message: updated structure of compose and .env file and test from ci team
+[17/09/2021 14:21:21] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: weight/db
+[17/09/2021 14:23:27] made by erezmizra@gmail.com on branch Weight with commit message: removed db health check: high CPU EC2??
