@@ -103,3 +103,12 @@ staging
 oronboy100@gmail.com
 updated config files with VOLUME argument
 Billing
+erezmizra@gmail.com
+Updated Devops DB file: billing/db
+staging
+htemstet@gmail.com
+updated structure of compose and .env file and test from ci team
+Weight
+oronboy100@gmail.com
+updated config files with VOLUME argument
+Billing
