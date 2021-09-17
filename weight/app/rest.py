@@ -2,7 +2,8 @@ from os import error
 import pymysql
 from app import app
 from db import mysql
-from flask import json, jsonify,request
+import json
+from flask import  jsonify,request
 from datetime import datetime, date, time
 @app.route('/')
 def users():
@@ -20,7 +21,7 @@ def health():
     return 'ok'
     
 #222222222222222222222222222222222222222
-@app.route("/batch-weight/<file>", methods=['POST','GET'])
+@app.route("/batch-weight/<filename>", methods=['POST','GET'])
 def POST_batch_weight(filename):
     conn = mysql.connect()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -42,7 +43,7 @@ def POST_batch_weight(filename):
             firstLine=csv_file.readline()
             unit=firstLine.split(',')[1]
             data=csv_file.readlines()
-            for line in data:
+            for line in data[1:]:
                 id = line.split(',')[0]
                 weight = int(line.split(',')[1])
                 values = (id, weight,unit)
@@ -132,6 +133,7 @@ def itemId(id):
         getContainerWeight=f"SELECT weight FROM containers WHERE id='{test_id}';"
         cursor.execute(getContainerWeight) 
         ContainerWeight = cursor.fetchall()
+        #to fixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         query=f"SELECT sessions_id FROM containers_has_sessions WHERE containers_id='{test_id} AND date BETWEEN {_from} AND {_to}';"
         cursor.execute(query)
         rows=[] 

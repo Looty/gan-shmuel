@@ -18,7 +18,10 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=123456
     volumes:
-      - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
+      - wdata:/var/lib/mysql/:rw
+      - ${VOLUME}:/docker-entrypoint-initdb.d/
+      - ${TEAM_PATH}:/weight
+      # - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
       # - wdata:/var/lib/mysql 
     labels:
       team: weight
@@ -27,5 +30,5 @@ services:
             test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
             timeout: 20s
             retries: 10     
-# volumes:
-#     wdata: 
+volumes:
+    wdata: 
