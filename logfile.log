@@ -1,5 +1,0 @@
-[16/09/2021 16:34:57] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument
-[16/09/2021 16:35:28] made by erezmizra@gmail.com on branch staging with commit message: Merging with billing
-[16/09/2021 19:31:29] made by hodaya060@gmail.com on branch Billing with commit message: add test.py file. test functionallity of: health, provider, truck, rates
-[16/09/2021 19:31:59] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
-[16/09/2021 20:53:08] made by hodaya060@gmail.com on branch Billing with commit message: fix port in test.py
