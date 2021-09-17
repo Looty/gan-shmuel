@@ -223,6 +223,7 @@ def git_api_comm():
                     os.system("echo [9]: Updating DB from branches to Devops")
                     # Update Devops DB from branch
                     os.system("git checkout Devops")
+                    os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
                     commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
                     os.system("git add .")
@@ -231,6 +232,7 @@ def git_api_comm():
 
                     os.system("echo [10]: Merging branch to staging")
                     os.system("git checkout staging")
+                    os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower())
                     merge_str = "Merging with " + branch.lower()
                     os.system("git add .")
@@ -256,6 +258,7 @@ def git_api_comm():
                 os.system("echo [4]: Merging Devops to staging")
                 # TODO: merge with staging
                 os.system("git checkout staging")
+                os.system("git pull")
                 os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
                 merge_str = "Merging with " + branch.lower()
                 os.system("git commit -m '%s'"%merge_str)
