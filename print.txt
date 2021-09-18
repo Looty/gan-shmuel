@@ -24,3 +24,6 @@ staging
 oronboy100@gmail.com
 update project
 Billing
+eilon696@gmail.com
+added .env.stg and fixed ports on envs
+Weight
