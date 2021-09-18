@@ -133,6 +133,8 @@ def git_api_comm():
 
             os.system("echo [2]: checkouting to commits on relevent branch")
             os.system("git checkout " + branch)
+            #TRYING TO FIX A B(U)G
+            os.system("git stash ")
             os.system("git pull --force")
 
             os.system("echo $PWD")
