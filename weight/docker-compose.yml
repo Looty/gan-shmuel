@@ -14,19 +14,19 @@ services:
   db:
     image: mysql:8.0.21
     ports:
-      - "3306"
+      - "3307:3306"
     environment:
       - "MYSQL_DATABASE=roytuts"
       - "MYSQL_ROOT_PASSWORD=123456"
     volumes:
+
       - wdata:/var/lib/mysql/:rw
       - ${VOLUME}:/docker-entrypoint-initdb.d/
       - ${TEAM_PATH}:/weight
+      #- wdata:/var/lib/mysql 
       # - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
-    expose:
-      - "3306"
     labels:
       team: weight
       container: db 
-volumes:
-  wdata: 
+#volumes:
+  #wdata: 
