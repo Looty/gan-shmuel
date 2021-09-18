@@ -4,6 +4,8 @@ services:
     build: ./app
     ports:
       - "${PORT}:5000"
+    volumes:
+      - ./in:/in
     labels:
       team: billing
       container: app
