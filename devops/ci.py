@@ -61,29 +61,35 @@ def git_api_comm():
             elif pull_request_json == "closed":
                 # LOAD TO PRODUCTION
                 os.system("echo [0.5]: a pull request just resolved - lets upload something to production!")
-                branch = jsonLoad["pull_request"]["head"]["ref"]
+                team_leader = jsonLoad["pull_request"]["user"]["login"]
 
                 os.system("echo [2]: checkouting to commits on main for production")
-                os.system("git checkout -f main")
+                os.system("git checkout main")
                 os.system("git pull") # -q to quiet output
 
-                os.system("echo [3]: switching to " + branch + " dir")
-                os.chdir(branch.lower())
-                os.system("echo $PWD")
-                os.system("ls -alF")
+                os.system("echo [3]: switching to " + team_leader + "s branch dir")
 
-                if branch == "Billing":
+                if team_leader == "MaybeOron":
+                    # billing
+                    os.chdir("billing")
+
                     os.environ["PORT"] = "8081"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
                     BILLING_MONITOR_ARRAY[2] = "8081"
                     STATUS_MONITOR_ARRAY[0] = "uploading to production"
-                elif branch == "Weight":
+                elif team_leader == "ron981":
+                    # weight
+                    os.chdir("weight")
+
                     os.environ["PORT"] = "8083"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY[2] = "8083"
                     STATUS_MONITOR_ARRAY[1] = "uploading to production"
+
+                os.system("echo $PWD")
+                os.system("ls -alF")
 
                 os.system("echo " + os.environ["PORT"])
                 os.system("echo " + os.environ["TEAM_PATH"])
@@ -92,22 +98,17 @@ def git_api_comm():
                 os.system("echo [4]: docker-compose for production [READY FOR PRODUCTION]")
                 os.system("docker-compose up --detach --build")
 
-                if branch == "Billing":
+                if team_leader == "MaybeOron":
                     STATUS_MONITOR_ARRAY[0] = ""
-                elif branch == "Weight":
+                    mail_list = ["oronboy100@gmail.com"]
+                    branch = "billing"
+                elif team_leader == "ron981":
                     STATUS_MONITOR_ARRAY[1] = ""
+                    mail_list = ["ron981@gmail.com"]
+                    branch = "weight"
 
                 os.chdir("..")
 
-                mail_list = ""
-                if (branch == "Devops"):
-                    mail_list = ["eilon696@gmail.com"]
-                elif (branch == "Billing"):
-                    mail_list = ["oronboy100@gmail.com"]
-                elif (branch == "Weight"):
-                    mail_list = ["ron981@gmail.com"]
-                else:
-                    mail_list = ["eilon696@gmail.com"]
                 sendmail(mail_list, branch + " was uploaded to production!", "Uploading server to production PORT..")
         elif commit_json:
             directory_ref = jsonLoad["commits"][-1]
@@ -117,6 +118,12 @@ def git_api_comm():
 
             os.system("echo [0.5]: loading a commit from " + branch)
             os.system("echo [1]: printing json results")
+            with open("print.txt", "a+") as f:
+                f.write(str(author) + "\n")
+                f.write(str(com_msg) + "\n")
+                f.write(str(branch) + "\n")
+
+            os.system("cat print.txt")
 
             with open("logfile.log", "a") as com_log:
                 date = datetime.datetime.now()
@@ -124,7 +131,7 @@ def git_api_comm():
                 com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
             os.system("echo [2]: checkouting to commits on relevent branch")
-            os.system("git checkout -f " + branch)
+            os.system("git checkout " + branch)
             os.system("git pull") # -q to quiet output
 
             os.system("echo $PWD")
@@ -168,7 +175,10 @@ def git_api_comm():
                 os.system("echo [5]: docker-compose up for test")
                 os.system("docker-compose up --detach --build")
                 os.system("echo [5.5]: exec to test container and loading test")
-                os.system('docker exec $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.Names}}") python3 /app/test.py')
+                os.system('docker exec -i $(docker container ps --filter label=container=app --filter label=team=' + branch.lower() + ' --format "{{.ID}}") sh')
+                os.system("echo $PWD")
+                os.system("ls -alF")
+                os.system('python3 app/test.py')
                 test_result = os.system('echo $?')
 
                 os.system("echo [6]: stopping tests containers")
@@ -211,7 +221,7 @@ def git_api_comm():
                     str_github = "erezmizra@gmail.com"
                     os.system("git config --global user.email '%s'"%str_github)
 
-                    '''os.system("echo [9]: Updating DB from branches to Devops")
+                    os.system("echo [9]: Updating DB from branches to Devops")
                     # Update Devops DB from branch
                     os.system("git checkout Devops")
                     os.system("git pull")
@@ -219,10 +229,10 @@ def git_api_comm():
                     commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
                     os.system("git add .")
                     os.system("git commit -m '%s'"%commit_str)
-                    os.system("git push")'''
+                    os.system("git push")
 
                     os.system("echo [10]: Merging branch to staging")
-                    os.system("git checkout -f staging")
+                    os.system("git checkout staging")
                     os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower())
                     merge_str = "Merging with " + branch.lower()
@@ -248,7 +258,7 @@ def git_api_comm():
 
                 os.system("echo [4]: Merging Devops to staging")
                 # TODO: merge with staging
-                os.system("git checkout -f staging")
+                os.system("git checkout staging")
                 os.system("git pull")
                 os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
                 merge_str = "Merging with " + branch.lower()
