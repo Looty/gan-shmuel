@@ -65,9 +65,9 @@ def git_api_comm():
                 branch = ""
 
                 os.system("echo [2]: checkouting to commits on main for production")
-                os.system("git checkout main")
                 os.system("git stash")
                 os.system("git stash drop")
+                os.system("git checkout main")
                 os.system("git pull")
 
                 os.system("echo [3]: switching to " + team_leader + "s branch dir")
@@ -137,9 +137,9 @@ def git_api_comm():
             # os.system("git add logfile.log")
             # os.system("git add print.txt")
             # os.system("git commit -m 'Logfile Updated'")
-            os.system("git checkout " + branch)
             os.system("git stash")
             os.system("git stash drop")
+            os.system("git checkout " + branch)
             os.system("git pull")
 
             os.system("echo $PWD")
@@ -158,9 +158,6 @@ def git_api_comm():
             if branch not in ("Devops", "staging", "main"): # OK is Billing/Weight
                 os.system("echo [3]: switching to branch dir")
                 os.chdir(branch.lower())
-                os.system("git stash")
-                os.system("git stash drop")
-                os.system("git pull")
                 os.system("echo $PWD")
                 os.system("ls -alF")
 
@@ -234,9 +231,10 @@ def git_api_comm():
 
                     os.system("echo [9]: Updating DB from branches to Devops")
                     # Update Devops DB from branch
-                    os.system("git checkout Devops")
                     os.system("git stash")
                     os.system("git stash drop")
+                    os.system("git checkout Devops")
+
                     os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
                     commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
@@ -245,9 +243,9 @@ def git_api_comm():
                     os.system("git push")
 
                     os.system("echo [10]: Merging branch to staging")
-                    os.system("git checkout staging")
                     os.system("git stash")
                     os.system("git stash drop")
+                    os.system("git checkout staging")
                     os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower())
                     merge_str = "Merging with " + branch.lower()
@@ -273,9 +271,9 @@ def git_api_comm():
 
                 os.system("echo [4]: Merging Devops to staging")
                 # TODO: merge with staging
-                os.system("git checkout staging")
                 os.system("git stash")
                 os.system("git stash drop")
+                os.system("git checkout staging")
                 os.system("git pull")
                 os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
                 merge_str = "Merging with " + branch.lower()
