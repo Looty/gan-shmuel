@@ -4,11 +4,11 @@ services:
     build: ./app
     links:
       - db
-    ports: 
+    ports:
       - "${PORT}:5000"
     labels:
       team: weight
-      container: app 
+      container: app
     depends_on:
       - db
   db:
@@ -19,14 +19,12 @@ services:
       - "MYSQL_DATABASE=roytuts"
       - "MYSQL_ROOT_PASSWORD=123456"
     volumes:
-
       - wdata:/var/lib/mysql/:rw
       - ${VOLUME}:/docker-entrypoint-initdb.d/
       - ${TEAM_PATH}:/weight
-      #- wdata:/var/lib/mysql 
       # - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
     labels:
       team: weight
-      container: db 
-#volumes:
-  #wdata: 
+      container: db
+volumes:
+  wdata:
