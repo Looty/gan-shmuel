@@ -136,7 +136,6 @@ def git_api_comm():
             os.system("git add logfile.log")
             os.system("git add print.txt")
             os.system("git commit -m 'Logfile Updated'")
-            os.system("git push")
             os.system("git checkout " + branch)
             os.system("git pull --force")
 
