@@ -19,7 +19,16 @@ def users():
 #111111111111111111111111111111111111111
 @app.route("/health", methods=['GET'])
 def health():
-    return 'ok'
+    try:
+        conn = mysql.connect()
+        mycursor = conn.cursor(pymysql.cursors.DictCursor)
+        mycursor.execute("show tables")
+        res = str(mycursor.fetchall())
+    except:
+        return "failed connecting to the database", 500
+    else:
+        return "WELCOME DATA CONNECTION WORKS" ,200
+
     
 #222222222222222222222222222222222222222
 @app.route("/batch-weight/<filename>", methods=['POST','GET'])
@@ -41,6 +50,7 @@ def POST_batch_weight(filename):
 
                 # cursor.execute(f"INSERT INTO containers (id,weight,unit) VALUES ({id},{weight},{unit})")
                 cursor.execute(query , values)
+        conn.commit()       
         return f'The file {filename} was successfully added to the DB.'
         
     #case if it's CSV
@@ -57,6 +67,7 @@ def POST_batch_weight(filename):
                 values = (id,weight,unit)
                 # return f"{id}    {weight}    {unit}"
                 cursor.execute(query , values)
+        conn.commit() 
         return f'The file {filename} was successfully added to the DB.'
     else:
         return f'{filename} Error.'
@@ -145,7 +156,7 @@ def itemId(id):
         cursor.execute(getContainerWeight) 
         ContainerWeight = cursor.fetchall()
         #to fixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        query=f"SELECT sessions_id FROM containers_has_sessions WHERE (SELECT date FROM sessions WHERE id=sessions_id) BETWEEN {_from} AND {_to};"
+        query=f"SELECT sessions_id FROM containers_has_sessions WHERE containers_id='{test_id}' AND (SELECT date FROM sessions WHERE id=sessions_id) BETWEEN {_from} AND {_to};"
         cursor.execute(query)
         rows=[] 
         rows = cursor.fetchall()
@@ -232,14 +243,16 @@ def POST_weight():
     container_weight=container_weight[0]["weight"]
     truck_weight = cursor.execute(f'SELECT weight FROM trucks WHERE id = "{truck_id}"')
     truck_weight=cursor.fetchall()
-    truck_weight=truck_weight[0]['weight']
-    neto=float(weight)-container_weight-truck_weight
+    truck_weight=truck_weight[0]["weight"]
+    # return f"{weight}     {container_weight}     {truck_weight}"
+    neto=float(weight)-float(container_weight)-float(truck_weight)
     #force=False - invalide direction
     if last_direction == direction and force == False :
         return f"Error direction for truck {truck_id}"
     #force=True - Weight overload
     elif last_direction == direction and force == True :
-        cursor.execute(f'"UPDATE sessions SET bruto={weight} WHERE trucks_id={truck_id} ORDER BY date desc limit 1"')
+        cursor.execute(f'UPDATE sessions SET bruto={weight} WHERE trucks_id={truck_id} ORDER BY date desc limit 1')
+        conn.commit()
     #none after in - Error
     elif direction == 'none' and last_direction == 'in':
         return f"Error direction for truck {truck_id}"
@@ -250,11 +263,12 @@ def POST_weight():
         if last_direction != 'in':
             return f"Error direction for truck {truck_id}"
         cursor.execute(f'UPDATE sessions SET neto={neto} WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1 ')
+        conn.commit()
         #retutn session id
         cursor.execute(f'SELECT id FROM sessions WHERE trucks_id={truck_id} AND direction="in" ORDER BY date desc limit 1')
         result=cursor.fetchall()
         session_id=result[0]['id']
-        return f'session id: {session_id}'
+        # return f'session id: {session_id}'
     if direction == 'in' or direction == 'none':
             data = {
                 "id": session_id,
@@ -262,7 +276,7 @@ def POST_weight():
                 "bruto": weight
             }
             return json.dumps(data)
-    elif dir == 'out':
+    elif direction == 'out':
             data = {
                 "id": session_id,
                 "truck": truck_id,
@@ -276,12 +290,13 @@ def POST_weight():
 def NewSession(direction, force, date, weight, truck_id, product):
     conn = mysql.connect()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute(f'SELECT id FROM products WHERE product_name="{product}" limit 1')
+    cursor.execute(f'SELECT id FROM products WHERE product_name="{product}"')
     product_id=cursor.fetchall()
     product_id=int(product_id[0]['id'])
     allData=(direction, force, date, weight, truck_id, product_id)
     query = (f'INSERT into sessions (direction, f, date, bruto, trucks_id, products_id) VALUES (%s, %s, %s, %s, %s, %s)')
     cursor.execute(query , allData)
+    conn.commit()
 
 
 
