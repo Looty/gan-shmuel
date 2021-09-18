@@ -319,7 +319,7 @@ def getBill(id):
             ## -> try to find All the provider id, orders the results as "All"s are last, so provider id's will be found first
                 product_rate = mycursor.fetchone()[0]
             except Exception as inst:
-                return "no rate table in use!", 400  
+                return "missing data / no rate table in use!", 400  
                 
             product_data[product_id]["rate"] = product_rate
             product_data[product_id]["pay"] = product_rate* product_information["amount"]
