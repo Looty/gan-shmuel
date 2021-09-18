@@ -4,6 +4,7 @@ from app import app
 from db import mysql
 from flask import json, jsonify,request
 from datetime import datetime, date, time
+import sys
 @app.route('/')
 def users():
     conn = mysql.connect()
@@ -161,6 +162,13 @@ def GET_session(id):
     try:
         conn = mysql.connect()
         cursor = conn.cursor(pymysql.cursors.DictCursor)
+        query_id=f"select id from sessions where id={id} "
+        cursor.execute(query_id)
+        ids=cursor.fetchone()
+        #check if the id exist
+        if(ids==None):
+            return "the id you enter not exist,sorry!"
+
         direction=f"SELECT direction FROM sessions WHERE id={id}"
         cursor.execute(direction)
         directionAnswer = cursor.fetchall()    
@@ -175,6 +183,8 @@ def GET_session(id):
             query=f"SELECT id, trucks_id, bruto FROM sessions WHERE id={id}"
             cursor.execute(query)
             result_list = cursor.fetchall()[0] 
+        if( result_list["id"]==pymysql.NULL):
+            return "not exist this id!"
         result_list["product"]= productname    #return sql result
         resp = jsonify(result_list)
         resp.status_code = 200
