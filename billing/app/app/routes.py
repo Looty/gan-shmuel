@@ -4,7 +4,7 @@ from app import app
 import mysql.connector, sys, json, os, datetime, random, csv, re
 import traceback
 
-# initialize connection to database 'billdb' in mysql server
+# initialize connection to database 'billdb', in mysql server
 def init_db():
     return mysql.connector.connect(
         password='root', 
