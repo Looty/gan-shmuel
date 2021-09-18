@@ -1,4 +1,4 @@
-version: "2.1"
+version: "3.1"
 services:
   app:
     build: ./app
@@ -10,22 +10,23 @@ services:
       team: weight
       container: app 
     depends_on:
-            db:
-                condition: service_healthy  
-
+      - db
   db:
     image: mysql:8.0.21
+    ports:
+      - "3307:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=123456
+      - "MYSQL_DATABASE=roytuts"
+      - "MYSQL_ROOT_PASSWORD=123456"
     volumes:
-      - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
-      - wdata:/var/lib/mysql 
+
+      - wdata:/var/lib/mysql/:rw
+      - ${VOLUME}:/docker-entrypoint-initdb.d/
+      - ${TEAM_PATH}:/weight
+      #- wdata:/var/lib/mysql 
+      # - "./db/user.sql:/docker-entrypoint-initdb.d/user.sql"
     labels:
       team: weight
       container: db 
-    healthcheck:
-            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-            timeout: 20s
-            retries: 10     
-volumes:
-  wdata: 
+#volumes:
+  #wdata: 
