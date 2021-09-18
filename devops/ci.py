@@ -66,6 +66,7 @@ def git_api_comm():
 
                 os.system("echo [2]: checkouting to commits on main for production")
                 os.system("git checkout main")
+
                 os.system("git pull --force")
 
                 os.system("echo [3]: switching to " + team_leader + "s branch dir")
@@ -132,6 +133,10 @@ def git_api_comm():
                 com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
             os.system("echo [2]: checkouting to commits on relevent branch")
+            os.system("git add logfile.log")
+            os.system("git add print.txt")
+            os.system("git commit -m 'Logfile Updated'")
+            os.system("git push")
             os.system("git checkout " + branch)
             os.system("git pull --force")
 
