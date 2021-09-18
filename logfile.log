@@ -3,9 +3,4 @@
 [18/09/2021 16:01:39] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
 [18/09/2021 16:01:41] made by erezmizra@gmail.com on branch staging with commit message: Merging with staging
 [18/09/2021 16:02:49] made by erezmizra@gmail.com on branch main with commit message: Merge pull request #6 from Looty/staging
-
-billing prodcution ready
-[18/09/2021 16:59:11] made by oronboy100@gmail.com on branch Billing with commit message: update staging project
-[18/09/2021 16:59:41] made by erezmizra@gmail.com on branch staging with commit message: Updated Devops DB file: billing/db
-[18/09/2021 17:52:03] made by oronboy100@gmail.com on branch Billing with commit message: update project
-[18/09/2021 20:36:41] made by eilon696@gmail.com on branch Weight with commit message: added .env.stg and fixed ports on envs
+[18/09/2021 20:55:26] made by oronboy100@gmail.com on branch Billing with commit message: updated config files with VOLUME argument

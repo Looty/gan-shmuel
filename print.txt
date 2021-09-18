@@ -4,26 +4,6 @@ Billing
 oronboy100@gmail.com
 erez ehad
 Billing
-erezmizra@gmail.com
-Updated Devops DB file: billing/db
-staging
-erezmizra@gmail.com
-Merging with staging
-staging
-erezmizra@gmail.com
-Merge pull request #6 from Looty/staging
-
-billing prodcution ready
-main
 oronboy100@gmail.com
-update staging project
+updated config files with VOLUME argument
 Billing
-erezmizra@gmail.com
-Updated Devops DB file: billing/db
-staging
-oronboy100@gmail.com
-update project
-Billing
-eilon696@gmail.com
-added .env.stg and fixed ports on envs
-Weight
