@@ -133,8 +133,6 @@ def git_api_comm():
 
             os.system("echo [2]: checkouting to commits on relevent branch")
             os.system("git checkout " + branch)
-            #TRYING TO FIX A B(U)G
-            os.system("git stash ")
             os.system("git pull --force")
 
             os.system("echo $PWD")
@@ -152,6 +150,8 @@ def git_api_comm():
 
             if branch not in ("Devops", "staging", "main"): # OK is Billing/Weight
                 os.system("echo [3]: switching to branch dir")
+                #TRYING TO FIX A B(U)G
+                os.system("git stash ")
                 os.chdir(branch.lower())
                 os.system("git pull --force")
                 os.system("echo $PWD")
