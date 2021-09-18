@@ -61,29 +61,35 @@ def git_api_comm():
             elif pull_request_json == "closed":
                 # LOAD TO PRODUCTION
                 os.system("echo [0.5]: a pull request just resolved - lets upload something to production!")
-                branch = jsonLoad["pull_request"]["head"]["ref"]
+                team_leader = jsonLoad["pull_request"]["user"]["login"]
 
                 os.system("echo [2]: checkouting to commits on main for production")
                 os.system("git checkout main")
                 os.system("git pull") # -q to quiet output
 
-                os.system("echo [3]: switching to " + branch + " dir")
-                os.chdir(branch.lower())
-                os.system("echo $PWD")
-                os.system("ls -alF")
+                os.system("echo [3]: switching to " + team_leader + "s branch dir")
 
-                if branch == "Billing":
+                if team_leader == "MaybeOron":
+                    # billing
+                    os.chdir("billing")
+
                     os.environ["PORT"] = "8081"
                     os.environ["VOLUME"] = DB_BILLING_PATH
                     os.environ["TEAM_PATH"] = BILLING_PATH
                     BILLING_MONITOR_ARRAY[2] = "8081"
                     STATUS_MONITOR_ARRAY[0] = "uploading to production"
-                elif branch == "Weight":
+                elif team_leader == "ron981":
+                    # weight
+                    os.chdir("weight")
+
                     os.environ["PORT"] = "8083"
                     os.environ["VOLUME"] = DB_WEIGHT_PATH
                     os.environ["TEAM_PATH"] = WEIGHT_PATH
                     WEIGHT_MONITOR_ARRAY[2] = "8083"
                     STATUS_MONITOR_ARRAY[1] = "uploading to production"
+
+                os.system("echo $PWD")
+                os.system("ls -alF")
 
                 os.system("echo " + os.environ["PORT"])
                 os.system("echo " + os.environ["TEAM_PATH"])
@@ -92,22 +98,17 @@ def git_api_comm():
                 os.system("echo [4]: docker-compose for production [READY FOR PRODUCTION]")
                 os.system("docker-compose up --detach --build")
 
-                if branch == "Billing":
+                if team_leader == "MaybeOron":
                     STATUS_MONITOR_ARRAY[0] = ""
-                elif branch == "Weight":
+                    mail_list = ["oronboy100@gmail.com"]
+                    branch = "billing"
+                elif team_leader == "ron981":
                     STATUS_MONITOR_ARRAY[1] = ""
+                    mail_list = ["ron981@gmail.com"]
+                    branch = "weight"
 
                 os.chdir("..")
 
-                mail_list = ""
-                if (branch == "Devops"):
-                    mail_list = ["eilon696@gmail.com"]
-                elif (branch == "Billing"):
-                    mail_list = ["oronboy100@gmail.com"]
-                elif (branch == "Weight"):
-                    mail_list = ["ron981@gmail.com"]
-                else:
-                    mail_list = ["eilon696@gmail.com"]
                 sendmail(mail_list, branch + " was uploaded to production!", "Uploading server to production PORT..")
         elif commit_json:
             directory_ref = jsonLoad["commits"][-1]
