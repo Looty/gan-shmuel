@@ -32,3 +32,14 @@ CREATE TABLE IF NOT EXISTS `Trucks` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`provider_id`) REFERENCES `Provider`(`id`)
 ) ENGINE=MyISAM ;
+
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("1111111",1);
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("2222222",2);
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("3333333",1);
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("4444444",2);
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("5555555",1);
+INSERT IGNORE INTO Trucks (id,provider_id) VALUES ("6666666",2);
+
+INSERT IGNORE INTO Provider (name) VALUES ("firstProvider");
+INSERT IGNORE INTO Provider (name) VALUES ("secondProvider");
+INSERT IGNORE INTO Provider (name) VALUES ("thirdProvider");
