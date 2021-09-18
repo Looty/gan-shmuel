@@ -65,8 +65,10 @@ def git_api_comm():
                 branch = ""
 
                 os.system("echo [2]: checkouting to commits on main for production")
+                os.system("git stash")
+                os.system("git stash drop")
                 os.system("git checkout main")
-                os.system("git pull --force")
+                os.system("git pull")
 
                 os.system("echo [3]: switching to " + team_leader + "s branch dir")
 
@@ -132,8 +134,13 @@ def git_api_comm():
                 com_log.write("[{0}] made by {1} on branch {2} with commit message: {3}\n".format(dt_string, author, branch, com_msg))
 
             os.system("echo [2]: checkouting to commits on relevent branch")
+            # os.system("git add logfile.log")
+            # os.system("git add print.txt")
+            # os.system("git commit -m 'Logfile Updated'")
+            os.system("git stash")
+            os.system("git stash drop")
             os.system("git checkout " + branch)
-            os.system("git pull --force")
+            os.system("git pull")
 
             os.system("echo $PWD")
             os.system("ls -alF")
@@ -151,7 +158,6 @@ def git_api_comm():
             if branch not in ("Devops", "staging", "main"): # OK is Billing/Weight
                 os.system("echo [3]: switching to branch dir")
                 os.chdir(branch.lower())
-                os.system("git pull --force")
                 os.system("echo $PWD")
                 os.system("ls -alF")
 
@@ -225,8 +231,11 @@ def git_api_comm():
 
                     os.system("echo [9]: Updating DB from branches to Devops")
                     # Update Devops DB from branch
+                    os.system("git stash")
+                    os.system("git stash drop")
                     os.system("git checkout Devops")
-                    os.system("git pull --force")
+
+                    os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower() + "/db") # git checkout Billing -- Billing/db
                     commit_str = "Updated Devops DB file: " + branch.lower() + "/db"
                     os.system("git add .")
@@ -234,8 +243,10 @@ def git_api_comm():
                     os.system("git push")
 
                     os.system("echo [10]: Merging branch to staging")
+                    os.system("git stash")
+                    os.system("git stash drop")
                     os.system("git checkout staging")
-                    os.system("git pull --force")
+                    os.system("git pull")
                     os.system("git checkout " + branch + " -- " + branch.lower())
                     merge_str = "Merging with " + branch.lower()
                     os.system("git add .")
@@ -260,8 +271,10 @@ def git_api_comm():
 
                 os.system("echo [4]: Merging Devops to staging")
                 # TODO: merge with staging
+                os.system("git stash")
+                os.system("git stash drop")
                 os.system("git checkout staging")
-                os.system("git pull --force")
+                os.system("git pull")
                 os.system("git checkout Devops -- devops") #  -> getting Devops dir to merge
                 merge_str = "Merging with " + branch.lower()
                 os.system("git commit -m '%s'"%merge_str)
