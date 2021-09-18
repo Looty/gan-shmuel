@@ -13,7 +13,7 @@ def init_db():
         database='billdb'
     )
 
-#
+
 # default page of the application
 @app.route('/')
 @app.route('/billing')
