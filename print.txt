@@ -18,3 +18,9 @@ main
 oronboy100@gmail.com
 update staging project
 Billing
+erezmizra@gmail.com
+Updated Devops DB file: billing/db
+staging
+oronboy100@gmail.com
+update project
+Billing
