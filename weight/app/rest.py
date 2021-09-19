@@ -14,7 +14,7 @@ def users():
     rows = cursor.fetchall()
     resp = jsonify(rows)
     resp.status_code = 200
-    return resp
+    return "GREEN WEIGHT" ,200
 
 #111111111111111111111111111111111111111
 @app.route("/health", methods=['GET'])
@@ -37,6 +37,8 @@ def POST_batch_weight(filename):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     filepath = f'./in/{filename}'
     query = f"INSERT INTO containers (id,weight,unit) VALUES (%s,%s,%s)"
+    
+    #צריך לדרוס תקובץ הקודם...
     #case if it's JSON
     if filepath.endswith('.json'):
         with open(filepath,'r') as json_file:
@@ -47,8 +49,10 @@ def POST_batch_weight(filename):
                 unit = line['unit']
                 values = (id, weight,unit)
                 # return f"{id}    {weight}    {unit}"
-
+                cursor.execute(f"DELETE FROM containers WHERE id='{id}'")
+                conn.commit()
                 # cursor.execute(f"INSERT INTO containers (id,weight,unit) VALUES ({id},{weight},{unit})")
+
                 cursor.execute(query , values)
         conn.commit()       
         return f'The file {filename} was successfully added to the DB.'
@@ -65,8 +69,13 @@ def POST_batch_weight(filename):
                 id = line.split(',')[0]
                 weight = int(line.split(',')[1])
                 values = (id,weight,unit)
+                cursor.execute(f"SELECT id FROM containers WHERE id='{id}'")
+                rows = cursor.fetchone()
+                if(rows!=None):
+                    cursor.execute(f"UPDATE containers SET weight={weight} WHERE id='{id}'")
                 # return f"{id}    {weight}    {unit}"
-                cursor.execute(query , values)
+                else:
+                    cursor.execute(query , values)
         conn.commit() 
         return f'The file {filename} was successfully added to the DB.'
     else:
@@ -273,7 +282,8 @@ def POST_weight():
             data = {
                 "id": session_id,
                 "truck": truck_id,
-                "bruto": weight
+                "bruto": weight,
+                "product":product
             }
             return json.dumps(data)
     elif direction == 'out':
